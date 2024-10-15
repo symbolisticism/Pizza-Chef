@@ -3,8 +3,7 @@ import 'package:pizza_chef/screens/home.dart';
 
 void main() {
   runApp(
-    MaterialApp(
-      builder: (context, child) => const Home(),
+    const MaterialApp(home: Home(),
       debugShowCheckedModeBanner: false,
     ),
   );
