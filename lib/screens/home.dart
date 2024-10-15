@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pizza_chef/screens/order.dart';
+import 'package:pizza_chef/screens/order_form.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -28,7 +28,11 @@ class Home extends StatelessWidget {
               children: [
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (context) => Order(),))
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const OrderForm(),
+                      ),
+                    );
                   },
                   child: const Text('Start Here'),
                 ),
