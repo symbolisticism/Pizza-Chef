@@ -5,12 +5,11 @@ enum Size { small, medium, large }
 enum Sauce { white, red }
 
 class Pizza {
-  const Pizza({
-    required this.pizzaSize,
-    required this.toppings,
-    required this.sauce,
-    required this.thinCrust
-  });
+  const Pizza(
+      {required this.pizzaSize,
+      required this.toppings,
+      required this.sauce,
+      required this.thinCrust});
 
   final Size pizzaSize;
   final List<String> toppings;
