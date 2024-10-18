@@ -16,14 +16,11 @@ class OrderForm extends StatefulWidget {
 
 class _OrderFormState extends State<OrderForm> {
   final _formKey = GlobalKey<FormState>();
-  final largePizzaController = TextEditingController();
-  final mediumPizzaController = TextEditingController();
   final smallPizzaController = TextEditingController();
+  bool secondSection = false;
 
   @override
   void dispose() {
-    largePizzaController.dispose();
-    mediumPizzaController.dispose();
     smallPizzaController.dispose();
     super.dispose();
   }
@@ -38,87 +35,52 @@ class _OrderFormState extends State<OrderForm> {
       ),
       body: Form(
         key: _formKey,
-        child: Column(
-          children: [
-            const Row(
-              children: [Text('How many pizzas would you like?')],
-            ),
-            // Row(
-            //   children: [
-            //     IconButton(
-            //       onPressed: () {},
-            //       icon: const Icon(Icons.remove),
-            //     ),
-            //     Expanded(
-            //       child: TextFormField(
-            //         controller: largePizzaController,
-            //         decoration: const InputDecoration(
-            //             label: Text('How many large pizzas?')),
-            //       ),
-            //     ),
-            //     IconButton(
-            //       onPressed: () {},
-            //       icon: const Icon(Icons.add),
-            //     ),
-            //   ],
-            // ),
-            // Row(
-            //   children: [
-            //     IconButton(
-            //       onPressed: () {},
-            //       icon: const Icon(Icons.remove),
-            //     ),
-            //     Expanded(
-            //       child: TextFormField(
-            //         controller: mediumPizzaController,
-            //         decoration: const InputDecoration(
-            //             label: Text('How many medium pizzas?')),
-            //       ),
-            //     ),
-            //     IconButton(
-            //       onPressed: () {},
-            //       icon: const Icon(Icons.add),
-            //     ),
-            //   ],
-            // ),
-            BlocBuilder<SmallPizzaCounterBloc, SmallPizzaCounterState>(
-              builder: (context, state) {
-                return Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        smallPizzaCounterBloc
-                            .add(SmallPizzaDecrement()); // add an event
-                        setState(() {
-                          smallPizzaController.text = state.count.toString();
-                        });
-                        logger.d(state.count);
-                      },
-                      icon: const Icon(Icons.remove),
-                    ),
-                    Expanded(
-                      child: TextFormField(
-                        controller: smallPizzaController,
-                        decoration: const InputDecoration(
-                            label: Text('How many small pizzas?')),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const Row(children: [Text('How many pizzas would you like?')]),
+              BlocBuilder<SmallPizzaCounterBloc, SmallPizzaCounterState>(
+                builder: (context, state) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    smallPizzaController.text = state.count.toString();
+                    logger.d(state.count);
+                  });
+
+                  return Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          smallPizzaCounterBloc
+                              .add(SmallPizzaDecrement()); // add an event
+                        },
+                        icon: const Icon(Icons.remove),
                       ),
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        smallPizzaCounterBloc
-                            .add(SmallPizzaIncrement()); // add an event
-                        setState(() {
-                          smallPizzaController.text = state.count.toString();
-                        });
-                        logger.d(state.count);
-                      },
-                      icon: const Icon(Icons.add),
-                    ),
-                  ],
-                );
-              },
-            )
-          ],
+                      Expanded(
+                        child: TextFormField(
+                          controller: smallPizzaController,
+                          decoration: const InputDecoration(
+                              label: Text('How many small pizzas?')),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          smallPizzaCounterBloc
+                              .add(SmallPizzaIncrement()); // add an event
+                        },
+                        icon: const Icon(Icons.add),
+                      ),
+                    ],
+                  );
+                },
+              ),
+              TextButton(
+                onPressed: () {
+                  secondSection = true;
+                },
+                child: const Text('Next'),
+              ),
+            ],
+          ),
         ),
       ),
     );
