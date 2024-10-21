@@ -3,16 +3,19 @@ import 'package:pizza_chef/bloc/small_pizza/small_pizza_bloc.dart';
 import 'package:pizza_chef/bloc/small_pizza/small_pizza_state.dart';
 import 'package:pizza_chef/bloc/small_pizza/small_pizza_event.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:logger/logger.dart';
+
+var logger = Logger(printer: PrettyPrinter());
 
 class SmallPizzaAdder extends StatelessWidget {
   const SmallPizzaAdder({
     super.key,
     required this.textEditingController,
-    required this.smallPizzaCounterBloc,
+    required this.counterBloc,
   });
 
   final TextEditingController textEditingController;
-  final SmallPizzaCounterBloc smallPizzaCounterBloc;
+  final SmallPizzaCounterBloc counterBloc;
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +29,7 @@ class SmallPizzaAdder extends StatelessWidget {
           children: [
             IconButton(
               onPressed: () {
-                smallPizzaCounterBloc
-                    .add(SmallPizzaDecrement()); // add an event
+                counterBloc.add(SmallPizzaDecrement()); // add an event
               },
               icon: const Icon(Icons.remove),
             ),
@@ -40,8 +42,7 @@ class SmallPizzaAdder extends StatelessWidget {
             ),
             IconButton(
               onPressed: () {
-                smallPizzaCounterBloc
-                    .add(SmallPizzaIncrement()); // add an event
+                counterBloc.add(SmallPizzaIncrement()); // add an event
               },
               icon: const Icon(Icons.add),
             ),
