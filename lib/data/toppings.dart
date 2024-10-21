@@ -1,0 +1,17 @@
+List<String> toppings = [
+  'Pepperoni',
+  'Mushrooms',
+  'Pineapple',
+  'Bell peppers',
+  'Olives',
+  'Anchovies',
+  'Onions',
+  'Sausage',
+  'Bacon',
+  'Spinach',
+  'Artichokes',
+  'Chicken',
+  'Jalapeños',
+  'Arugula',
+  'Pesto',
+];
