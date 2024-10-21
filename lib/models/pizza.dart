@@ -1,8 +1,5 @@
-// pizza size
-enum Size { small, medium, large }
-
-// type of pizza sauce
-enum Sauce { white, red }
+import 'package:pizza_chef/data/pizza_sauce.dart';
+import 'package:pizza_chef/data/pizza_size.dart';
 
 class Pizza {
   const Pizza(
@@ -11,8 +8,8 @@ class Pizza {
       required this.sauce,
       required this.thinCrust});
 
-  final Size pizzaSize;
+  final PizzaSize pizzaSize;
   final List<String> toppings;
-  final Sauce sauce;
+  final PizzaSauce sauce;
   final bool thinCrust;
 }
