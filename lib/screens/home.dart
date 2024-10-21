@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pizza_chef/screens/order_form.dart';
+import 'package:pizza_chef/screens/cart.dart';
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -9,6 +10,17 @@ class Home extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pizza Chef'),
+        actions: [
+          IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const Cart(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.shopping_cart))
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
