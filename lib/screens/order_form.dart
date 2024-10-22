@@ -18,7 +18,6 @@ class OrderForm extends StatefulWidget {
 }
 
 class _OrderFormState extends State<OrderForm> {
-  final _formKey = GlobalKey<FormState>();
   final sizeController = TextEditingController();
   final sauceController = TextEditingController();
   final crustController = TextEditingController();
