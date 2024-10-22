@@ -34,8 +34,6 @@ class _OrderFormState extends State<OrderForm> {
         title: const Text('Order'),
       ),
       body: SingleChildScrollView(
-        child: Form(
-          key: _formKey,
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
@@ -122,7 +120,25 @@ class _OrderFormState extends State<OrderForm> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+                    // check how many pizzas are in the cart
+                    CollectionReference cart = db.collection('cart');
+                    QuerySnapshot snapshot = await cart.get();
+                    int numberOfPizzas = snapshot.docs.length;
+
+                    // if the order is full
+                    if (numberOfPizzas >= 5) {
+                      if (!context.mounted) return;
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'You have reached the limit of pizzas. Please remove one before creating another one.'),
+                        ),
+                      );
+                      return;
+                    }
+                    
+
                     Pizza pizza = Pizza(
                         pizzaSize: selectedSize,
                         toppings: selectedToppings!,
@@ -135,7 +151,6 @@ class _OrderFormState extends State<OrderForm> {
               ],
             ),
           ),
-        ),
       ),
     );
   }
