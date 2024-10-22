@@ -1,3 +1,4 @@
+import 'package:pizza_chef/data/pizza_crust.dart';
 import 'package:pizza_chef/data/pizza_sauce.dart';
 import 'package:pizza_chef/data/pizza_size.dart';
 import 'package:uuid/uuid.dart';
@@ -14,6 +15,16 @@ class Pizza {
   final PizzaSize pizzaSize;
   final List<String> toppings;
   final PizzaSauce sauce;
-  final bool thinCrust;
+  final PizzaCrust thinCrust;
   final id = uuid.v4();
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'thinCrust': thinCrust.label,
+      'sauce': sauce.label,
+      'toppings': toppings,
+      'pizzaSize': pizzaSize.label
+    };
+  }
 }
