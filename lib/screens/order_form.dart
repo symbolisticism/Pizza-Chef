@@ -4,6 +4,7 @@ import 'package:pizza_chef/data/pizza_size.dart';
 import 'package:pizza_chef/data/pizza_crust.dart';
 import 'package:pizza_chef/data/toppings.dart';
 import 'package:logger/logger.dart';
+import 'package:pizza_chef/models/pizza.dart';
 
 var logger = Logger(printer: PrettyPrinter());
 
@@ -117,8 +118,10 @@ class _OrderFormState extends State<OrderForm> {
                 ),
               ),
               ElevatedButton(
-                onPressed: () {},
-                child: const Text('Order Pizza'),
+                onPressed: () {
+                  
+                },
+                child: const Text('Add to Cart'),
               ),
             ],
           ),

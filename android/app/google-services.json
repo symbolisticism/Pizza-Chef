@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "371635875713",
+    "project_id": "pizza-chef-873cf",
+    "storage_bucket": "pizza-chef-873cf.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:371635875713:android:e8587f28a37896adcb4280",
+        "android_client_info": {
+          "package_name": "com.example.pizza_chef"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDf0lDE7qZMGgOpQvZ8awTKRaHJFxqqwNQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
