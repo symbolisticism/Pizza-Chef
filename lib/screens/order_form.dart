@@ -22,9 +22,9 @@ class _OrderFormState extends State<OrderForm> {
   final sizeController = TextEditingController();
   final sauceController = TextEditingController();
   final crustController = TextEditingController();
-  PizzaSize? selectedSize;
-  PizzaSauce? selectedSauce;
-  PizzaCrust? selectedCrust;
+  PizzaSize selectedSize = PizzaSize.small;
+  PizzaSauce selectedSauce = PizzaSauce.red;
+  PizzaCrust selectedCrust = PizzaCrust.thinCrust;
   List<String>? selectedToppings = [];
 
   @override
@@ -48,7 +48,7 @@ class _OrderFormState extends State<OrderForm> {
                   label: const Text('Pizza Size'),
                   onSelected: (PizzaSize? size) {
                     setState(() {
-                      selectedSize = size;
+                      selectedSize = size!;
                     });
                   },
                   dropdownMenuEntries: PizzaSize.values
@@ -67,7 +67,7 @@ class _OrderFormState extends State<OrderForm> {
                   label: const Text('Pizza Sauce'),
                   onSelected: (PizzaSauce? sauce) {
                     setState(() {
-                      selectedSauce = sauce;
+                      selectedSauce = sauce!;
                     });
                   },
                   dropdownMenuEntries: PizzaSauce.values
@@ -86,7 +86,7 @@ class _OrderFormState extends State<OrderForm> {
                   label: const Text('Pizza Crust'),
                   onSelected: (PizzaCrust? crust) {
                     setState(() {
-                      selectedCrust = crust;
+                      selectedCrust = crust!;
                     });
                   },
                   dropdownMenuEntries: PizzaCrust.values
@@ -124,10 +124,10 @@ class _OrderFormState extends State<OrderForm> {
                 ElevatedButton(
                   onPressed: () {
                     Pizza pizza = Pizza(
-                        pizzaSize: selectedSize!,
+                        pizzaSize: selectedSize,
                         toppings: selectedToppings!,
-                        sauce: selectedSauce!,
-                        thinCrust: selectedCrust!);
+                        sauce: selectedSauce,
+                        thinCrust: selectedCrust);
                     db.collection('cart').add(pizza.toMap());
                   },
                   child: const Text('Add to Cart'),
