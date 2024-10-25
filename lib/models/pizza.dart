@@ -10,18 +10,18 @@ class Pizza {
       {required this.pizzaSize,
       required this.toppings,
       required this.sauce,
-      required this.thinCrust});
+      required this.crustType});
 
   final PizzaSize pizzaSize;
   final List<String> toppings;
   final PizzaSauce sauce;
-  final PizzaCrust thinCrust;
+  final PizzaCrust crustType;
   final id = uuid.v4();
 
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'thinCrust': thinCrust.label,
+      'thinCrust': crustType.label,
       'sauce': sauce.label,
       'toppings': toppings,
       'pizzaSize': pizzaSize.label
