@@ -70,7 +70,7 @@ class _CartState extends State<Cart> {
       final toppingsDynamic = doc.get('toppings') as List<dynamic>;
       dynamic sauce = doc.get('sauce') as String;
       dynamic crust = doc.get('thinCrust') as String;
-      dynamic timestamp = doc.get('timestamp') as String;
+      dynamic timestamp = doc.get('timestamp') as Timestamp;
 
       List<String> toppings = List<String>.from(toppingsDynamic);
 
@@ -107,7 +107,7 @@ class _CartState extends State<Cart> {
           break;
       }
 
-      timestamp = DateTime.parse(timestamp);
+      timestamp = timestamp.toDate();
 
       if (!pizzas.containsKey(pizzaId)) {
         pizzas[pizzaId] = Pizza(
