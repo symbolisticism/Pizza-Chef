@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:pizza_chef/screens/order_form.dart';
 import 'package:pizza_chef/screens/cart.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:logger/logger.dart';
+
+var logger = Logger(printer: PrettyPrinter());
 
 class Home extends StatelessWidget {
   const Home({super.key});
@@ -39,7 +43,33 @@ class Home extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ElevatedButton(
-                  onPressed: () {
+                  onPressed: () async {
+
+                    // check if the device is connected to the internet first
+                    final List<ConnectivityResult> connectivityResult =
+                        await Connectivity().checkConnectivity();
+
+                    if (!connectivityResult.contains(ConnectivityResult.wifi)) {
+                      if (!context.mounted) {
+                        logger.d('Context not mounted');
+                        return;
+                      }
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'You are not connected to WiFi. Please connect and try again.'),
+                        ),
+                      );
+
+                      return;
+                    }
+
+                    if (!context.mounted) {
+                      logger.d('Context not mounted');
+                      return;
+                    }
+
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => const OrderForm(),
