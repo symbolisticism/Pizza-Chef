@@ -49,7 +49,9 @@ class Home extends StatelessWidget {
                     final List<ConnectivityResult> connectivityResult =
                         await Connectivity().checkConnectivity();
 
-                    if (!connectivityResult.contains(ConnectivityResult.wifi)) {
+                    if (!connectivityResult.contains(ConnectivityResult.wifi) &&
+                        !connectivityResult
+                            .contains(ConnectivityResult.mobile)) {
                       if (!context.mounted) {
                         logger.d('Context not mounted');
                         return;
@@ -58,7 +60,7 @@ class Home extends StatelessWidget {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                              'You are not connected to WiFi. Please connect and try again.'),
+                              'You are not connected to WiFi or a cellular network. Please connect and try again.'),
                         ),
                       );
 
