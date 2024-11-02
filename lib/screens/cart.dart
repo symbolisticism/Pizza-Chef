@@ -65,11 +65,12 @@ class _CartState extends State<Cart> {
     final QuerySnapshot querySnapshot = await db.collection('cart').get();
 
     for (var doc in querySnapshot.docs) {
-      final pizzaId = doc.get('id') as String;
+      final pizzaId = doc.id;
       dynamic pizzaSize = doc.get('pizzaSize') as String;
       final toppingsDynamic = doc.get('toppings') as List<dynamic>;
       dynamic sauce = doc.get('sauce') as String;
       dynamic crust = doc.get('thinCrust') as String;
+      dynamic timestamp = doc.get('timestamp') as String;
 
       List<String> toppings = List<String>.from(toppingsDynamic);
 
@@ -106,12 +107,16 @@ class _CartState extends State<Cart> {
           break;
       }
 
+      timestamp = DateTime.parse(timestamp);
+
       if (!pizzas.containsKey(pizzaId)) {
         pizzas[pizzaId] = Pizza(
-            pizzaSize: pizzaSize,
-            toppings: toppings,
-            sauce: sauce,
-            crustType: crust);
+          pizzaSize: pizzaSize,
+          toppings: toppings,
+          sauce: sauce,
+          crustType: crust,
+          timestamp: timestamp,
+        );
       }
       logger.d(pizzas[pizzaId]);
     }
@@ -123,18 +128,18 @@ class _CartState extends State<Cart> {
       child: ListView.builder(
         itemCount: pizzas.length,
         itemBuilder: (context, index) {
-          return const ListTile(
-            title: Text("Pizza 1"),
+          List<String> keys = pizzas.keys.toList();
+          List<Pizza> values = pizzas.values.toList();
+
+          String key = keys[index];
+          Pizza value = values[index];
+
+          return ListTile(
+            title: Text(key),
+            subtitle: Text(value.toString()),
           );
         },
       ),
     );
-
-    // return Padding(
-    //   padding: const EdgeInsets.all(16),
-    //   child: ListView.builder(
-    //     itemCount: ,
-    //     itemBuilder: (context, index) {}),
-    // );
   }
 }
