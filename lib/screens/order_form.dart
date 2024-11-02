@@ -137,12 +137,36 @@ class _OrderFormState extends State<OrderForm> {
                     return;
                   }
 
+                  final now = DateTime.now();
+                  logger.d("Current timestamp: $now");
+
+                  // add pizza to the database
                   Pizza pizza = Pizza(
-                      pizzaSize: selectedSize,
-                      toppings: selectedToppings!,
-                      sauce: selectedSauce,
-                      crustType: selectedCrust);
-                  db.collection('cart').add(pizza.toMap());
+                    pizzaSize: selectedSize,
+                    toppings: selectedToppings!,
+                    sauce: selectedSauce,
+                    crustType: selectedCrust,
+                    timestamp: now,
+                  );
+
+                  try {
+                    await db
+                        .collection('cart')
+                        .doc(pizza.id)
+                        .set(pizza.toMap());
+                  } catch (e) {
+                    logger.e(e);
+                  }
+
+                  if (!context.mounted) {
+                    logger.e("Context not mounted");
+                    return;
+                  }
+
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                      content:
+                          Text('Your pizza has been successfully added.')));
                 },
                 child: const Text('Add to Cart'),
               ),
