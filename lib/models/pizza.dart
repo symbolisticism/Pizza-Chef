@@ -27,12 +27,33 @@ class Pizza {
       'sauce': sauce.label,
       'toppings': toppings,
       'pizzaSize': pizzaSize.label,
-      'timestamp' : timestamp,
+      'timestamp': timestamp,
     };
   }
 
   @override
   String toString() {
-    return "$pizzaSize pizza with $sauce sauce, $crustType, and the following toppings: $toppings";
+    return "${pizzaSize.label} pizza with ${sauce.label} sauce, ${crustType.label}, and the following toppings: ${toppings.join(', ')}";
   }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is Pizza) {
+      return pizzaSize == other.pizzaSize &&
+          toppings == other.toppings &&
+          sauce == other.sauce &&
+          crustType == other.crustType;
+    }
+
+    return false;
+  }
+
+  @override
+    @override
+  int get hashCode =>
+      crustType.hashCode ^ 
+      sauce.hashCode ^ 
+      pizzaSize.hashCode ^ 
+      toppings.hashCode;
 }
