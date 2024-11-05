@@ -6,7 +6,6 @@ import 'package:pizza_chef/data/toppings.dart';
 import 'package:logger/logger.dart';
 import 'package:pizza_chef/models/pizza.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:collection/collection.dart';
 
 var logger = Logger(printer: PrettyPrinter());
 final db = FirebaseFirestore.instance;
@@ -105,13 +104,13 @@ class _OrderFormState extends State<OrderForm> {
                     return CheckboxListTile(
                       tristate: false,
                       title: Text(toppings[index]),
-                      value: selectedToppings?.contains(toppings[index]),
+                      value: selectedToppings.contains(toppings[index]),
                       onChanged: (bool? value) {
                         setState(() {
                           if (value == true) {
-                            selectedToppings?.add(toppings[index]);
+                            selectedToppings.add(toppings[index]);
                           } else {
-                            selectedToppings?.remove(toppings[index]);
+                            selectedToppings.remove(toppings[index]);
                           }
                         });
                       },
@@ -158,7 +157,7 @@ class _OrderFormState extends State<OrderForm> {
                     final recordPizzaSize = doc.get('pizzaSize') as String;
                     final recordSauce = doc.get('sauce') as String;
                     final recordCrust = doc.get('thinCrust') as String;
-                    
+
                     // list manipulation for comparison
                     dynamic recordToppings =
                         doc.get('toppings') as List<dynamic>;
