@@ -6,6 +6,7 @@ import 'package:pizza_chef/data/toppings.dart';
 import 'package:logger/logger.dart';
 import 'package:pizza_chef/models/pizza.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:collection/collection.dart';
 
 var logger = Logger(printer: PrettyPrinter());
 final db = FirebaseFirestore.instance;
@@ -24,7 +25,7 @@ class _OrderFormState extends State<OrderForm> {
   PizzaSize selectedSize = PizzaSize.small;
   PizzaSauce selectedSauce = PizzaSauce.red;
   PizzaCrust selectedCrust = PizzaCrust.thinCrust;
-  List<String>? selectedToppings = [];
+  List<String> selectedToppings = [];
 
   @override
   Widget build(BuildContext context) {
@@ -120,7 +121,22 @@ class _OrderFormState extends State<OrderForm> {
               ),
               ElevatedButton(
                 onPressed: () async {
-                  // check how many pizzas are in the cart
+                  // get the current time
+                  final now = DateTime.now();
+
+                  // sort the list to make it easier to compare later
+                  selectedToppings = (selectedToppings..sort()).toList();
+
+                  // create the pizza object
+                  Pizza pizza = Pizza(
+                    pizzaSize: selectedSize,
+                    toppings: selectedToppings,
+                    sauce: selectedSauce,
+                    crustType: selectedCrust,
+                    timestamp: now,
+                  );
+
+                  // get number of pizzas in the cart
                   CollectionReference cart = db.collection('cart');
                   QuerySnapshot snapshot = await cart.get();
                   int numberOfPizzas = snapshot.docs.length;
@@ -137,17 +153,40 @@ class _OrderFormState extends State<OrderForm> {
                     return;
                   }
 
-                  final now = DateTime.now();
-                  logger.d("Current timestamp: $now");
+                  // check if an identical pizza already exists in the database
+                  for (var doc in snapshot.docs) {
+                    final recordPizzaSize = doc.get('pizzaSize') as String;
+                    final recordSauce = doc.get('sauce') as String;
+                    final recordCrust = doc.get('thinCrust') as String;
+                    
+                    // list manipulation for comparison
+                    dynamic recordToppings =
+                        doc.get('toppings') as List<dynamic>;
+                    recordToppings = List<String>.from(recordToppings);
+                    recordToppings = (recordToppings..sort()).toList();
 
-                  // add pizza to the database
-                  Pizza pizza = Pizza(
-                    pizzaSize: selectedSize,
-                    toppings: selectedToppings!,
-                    sauce: selectedSauce,
-                    crustType: selectedCrust,
-                    timestamp: now,
-                  );
+                    if (pizza.pizzaSize.label == recordPizzaSize &&
+                        pizza.sauce.label == recordSauce &&
+                        pizza.crustType.label == recordCrust &&
+                        const ListEquality()
+                            .equals(recordToppings, pizza.toppings)) {
+
+                      // check if context is mounted
+                      if (!context.mounted) {
+                        logger.d('Context not mounted');
+                        return;
+                      }
+                      // tell user that there's already an identical pizza in the cart
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              'An identical pizza is already in your cart. Please make this one unique before proceeding.'),
+                        ),
+                      );
+
+                      return;
+                    }
+                  }
 
                   try {
                     await db
