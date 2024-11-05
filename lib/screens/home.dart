@@ -74,7 +74,7 @@ class Home extends StatelessWidget {
 
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (context) => const OrderForm(),
+                        builder: (context) => OrderForm.defaultOrder(),
                       ),
                     );
                   },
