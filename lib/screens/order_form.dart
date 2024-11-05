@@ -11,7 +11,25 @@ var logger = Logger(printer: PrettyPrinter());
 final db = FirebaseFirestore.instance;
 
 class OrderForm extends StatefulWidget {
-  const OrderForm({super.key});
+  OrderForm.defaultOrder({super.key})
+      : selectedSize = PizzaSize.small,
+        selectedSauce = PizzaSauce.red,
+        selectedCrust = PizzaCrust.thinCrust,
+        selectedToppings = [];
+
+  // constructor that will take parameters
+  const OrderForm({
+    required this.selectedSize,
+    required this.selectedSauce,
+    required this.selectedCrust,
+    required this.selectedToppings,
+    super.key,
+  });
+
+  final PizzaSize selectedSize;
+  final PizzaSauce selectedSauce;
+  final PizzaCrust selectedCrust;
+  final List<String> selectedToppings;
 
   @override
   State<OrderForm> createState() => _OrderFormState();
@@ -21,10 +39,20 @@ class _OrderFormState extends State<OrderForm> {
   final sizeController = TextEditingController();
   final sauceController = TextEditingController();
   final crustController = TextEditingController();
-  PizzaSize selectedSize = PizzaSize.small;
-  PizzaSauce selectedSauce = PizzaSauce.red;
-  PizzaCrust selectedCrust = PizzaCrust.thinCrust;
-  List<String> selectedToppings = [];
+
+  late PizzaSize selectedSize;
+  late PizzaSauce selectedSauce;
+  late PizzaCrust selectedCrust;
+  late List<String> selectedToppings;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedSize = widget.selectedSize;
+    selectedSauce = widget.selectedSauce;
+    selectedCrust = widget.selectedCrust;
+    selectedToppings = widget.selectedToppings;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +67,7 @@ class _OrderFormState extends State<OrderForm> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               DropdownMenu<PizzaSize>(
-                initialSelection: PizzaSize.small,
+                initialSelection: selectedSize,
                 controller: sizeController,
                 requestFocusOnTap: true,
                 label: const Text('Pizza Size'),
@@ -58,7 +86,7 @@ class _OrderFormState extends State<OrderForm> {
               ),
               const SizedBox(height: 48),
               DropdownMenu<PizzaSauce>(
-                initialSelection: PizzaSauce.red,
+                initialSelection: selectedSauce,
                 controller: sauceController,
                 requestFocusOnTap: true,
                 label: const Text('Pizza Sauce'),
@@ -77,7 +105,7 @@ class _OrderFormState extends State<OrderForm> {
               ),
               const SizedBox(height: 48),
               DropdownMenu<PizzaCrust>(
-                initialSelection: PizzaCrust.thinCrust,
+                initialSelection: selectedCrust,
                 controller: crustController,
                 requestFocusOnTap: true,
                 label: const Text('Pizza Crust'),
@@ -104,13 +132,16 @@ class _OrderFormState extends State<OrderForm> {
                     return CheckboxListTile(
                       tristate: false,
                       title: Text(toppings[index]),
-                      value: selectedToppings.contains(toppings[index]),
+                      value: selectedToppings.contains(toppings[
+                          index]), // TODO: Need to make sure this isn't null
                       onChanged: (bool? value) {
                         setState(() {
                           if (value == true) {
-                            selectedToppings.add(toppings[index]);
+                            selectedToppings.add(toppings[
+                                index]); // TODO: Need to make sure this isn't null
                           } else {
-                            selectedToppings.remove(toppings[index]);
+                            selectedToppings.remove(toppings[
+                                index]); // TODO: Need to make sure this isn't null
                           }
                         });
                       },
@@ -124,7 +155,8 @@ class _OrderFormState extends State<OrderForm> {
                   final now = DateTime.now();
 
                   // sort the list to make it easier to compare later
-                  selectedToppings = (selectedToppings..sort()).toList();
+                  selectedToppings = (selectedToppings..sort())
+                      .toList(); // TODO: Need to make sure this isn't null
 
                   // create the pizza object
                   Pizza pizza = Pizza(
@@ -143,6 +175,7 @@ class _OrderFormState extends State<OrderForm> {
                   // if the order is full
                   if (numberOfPizzas >= 5) {
                     if (!context.mounted) return;
+                    ScaffoldMessenger.of(context).clearSnackBars();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
@@ -169,13 +202,13 @@ class _OrderFormState extends State<OrderForm> {
                         pizza.crustType.label == recordCrust &&
                         const ListEquality()
                             .equals(recordToppings, pizza.toppings)) {
-
                       // check if context is mounted
                       if (!context.mounted) {
                         logger.d('Context not mounted');
                         return;
                       }
                       // tell user that there's already an identical pizza in the cart
+                      ScaffoldMessenger.of(context).clearSnackBars();
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
@@ -202,6 +235,7 @@ class _OrderFormState extends State<OrderForm> {
                   }
 
                   Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
                       content:
                           Text('Your pizza has been successfully added.')));
