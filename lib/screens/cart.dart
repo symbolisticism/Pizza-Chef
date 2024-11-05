@@ -120,23 +120,21 @@ class _CartState extends State<Cart> {
       }
     }
 
-
     return content = Padding(
       padding: const EdgeInsets.all(16),
       child: ListView.builder(
         itemCount: pizzas.length,
         itemBuilder: (context, index) {
-          List<String> keys = pizzas.keys.toList();
           List<Pizza> values = pizzas.values.toList();
 
-          String key = keys[index];
           Pizza value = values[index];
 
           return ListTile(
             // title: Text(key),
             title: Text(value.toString()),
             leading: const Icon(Icons.done, color: Colors.green),
-            trailing: IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
+            trailing:
+                IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
           );
         },
       ),
