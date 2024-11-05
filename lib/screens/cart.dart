@@ -118,10 +118,8 @@ class _CartState extends State<Cart> {
           timestamp: timestamp,
         );
       }
-      logger.d(pizzas[pizzaId]);
     }
 
-    logger.d(pizzas);
 
     return content = Padding(
       padding: const EdgeInsets.all(16),
@@ -135,8 +133,10 @@ class _CartState extends State<Cart> {
           Pizza value = values[index];
 
           return ListTile(
-            title: Text(key),
-            subtitle: Text(value.toString()),
+            // title: Text(key),
+            title: Text(value.toString()),
+            leading: const Icon(Icons.done, color: Colors.green),
+            trailing: IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
           );
         },
       ),
