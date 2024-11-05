@@ -53,17 +53,12 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final sizeController = TextEditingController();
-    final sauceController = TextEditingController();
-    final crustController = TextEditingController();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         DropdownMenu<PizzaSize>(
           initialSelection: selectedSize,
-          controller: sizeController,
-          requestFocusOnTap: true,
           label: const Text('Pizza Size'),
           onSelected: (PizzaSize? size) {
             setState(() {
@@ -81,8 +76,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
         const SizedBox(height: 48),
         DropdownMenu<PizzaSauce>(
           initialSelection: selectedSauce,
-          controller: sauceController,
-          requestFocusOnTap: true,
           label: const Text('Pizza Sauce'),
           onSelected: (PizzaSauce? sauce) {
             setState(() {
@@ -100,8 +93,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
         const SizedBox(height: 48),
         DropdownMenu<PizzaCrust>(
           initialSelection: selectedCrust,
-          controller: crustController,
-          requestFocusOnTap: true,
           label: const Text('Pizza Crust'),
           onSelected: (PizzaCrust? crust) {
             setState(() {
