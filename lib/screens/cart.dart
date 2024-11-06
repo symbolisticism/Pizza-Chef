@@ -140,7 +140,10 @@ class _CartState extends State<Cart> {
                         return FractionallySizedBox(
                           heightFactor: 0.9,
                           child: Padding(
-                            padding: const EdgeInsets.all(16.0),
+                            padding: const EdgeInsets.all(20.0),
+                            // TODO: Cart screen needs to rebuild after an update
+                            // data is accurately reflected in Firestore but not
+                            // in app
                             child: OrderFormWidget(
                               selectedSize: value.pizzaSize,
                               selectedSauce: value.sauce,
