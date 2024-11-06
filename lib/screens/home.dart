@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:pizza_chef/screens/order_form.dart';
 import 'package:pizza_chef/screens/cart.dart';
@@ -15,15 +16,52 @@ class Home extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Pizza Chef'),
         actions: [
-          IconButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const Cart(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.shopping_cart))
+          StreamBuilder<QuerySnapshot>(
+            stream: FirebaseFirestore.instance.collection('cart').snapshots(),
+            builder: (context, snapshot) {
+              int itemCount = 0;
+              if (snapshot.hasData) {
+                itemCount = snapshot.data!.docs.length;
+              }
+
+              return IconButton(
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const Cart(),
+                    ),
+                  );
+                },
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    const Icon(Icons.shopping_cart),
+                    if (itemCount > 0) ...[
+                      Positioned(
+                        right: -9,
+                        top: -9,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Text(
+                            '$itemCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              );
+            },
+          ),
         ],
       ),
       body: Padding(
