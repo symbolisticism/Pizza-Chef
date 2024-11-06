@@ -108,6 +108,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
         ),
         const SizedBox(height: 48),
         const Text('Scroll through the toppings:'),
+        // TODO: Clear the changes to the toppings after the user exits without saving
         SizedBox(
           height: 300,
           child: ListView.builder(
@@ -231,7 +232,11 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                   return;
                 }
 
-                Navigator.of(context).pop();
+                if (pizzaUpdate != null && pizzaUpdate!) {
+                  Navigator.of(context).pop(true);
+                } else {
+                  Navigator.of(context).pop(false);
+                }
                 ScaffoldMessenger.of(context).clearSnackBars();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
@@ -245,8 +250,52 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                   ? 'Update Pizza'
                   : 'Add to Cart'),
             ),
-            if (pizzaUpdate != null && pizzaUpdate!) const Spacer(),
-            TextButton(onPressed: () {}, child: const Text('Delete Pizza'))
+            if (pizzaUpdate != null && pizzaUpdate!) ...[
+              const Spacer(),
+              TextButton(
+                  onPressed: () {
+                    showDialog<void>(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text('Delete this pizza?'),
+                          content: const Text(
+                              'Are you sure you want to delete this pizza? This action cannot be undone.'),
+                          actions: [
+                            ElevatedButton(
+                              onPressed: () async {
+                                await db
+                                    .collection('cart')
+                                    .doc(pizzaId)
+                                    .delete();
+                                if (!context.mounted) {
+                                  logger.d('Context not mounted');
+                                  return;
+                                }
+                                Navigator.of(context).pop();
+                                Navigator.of(context).pop(true);
+                                ScaffoldMessenger.of(context).clearSnackBars();
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Your pizza was deleted.'),
+                                  ),
+                                );
+                              },
+                              child: const Text('Delete Pizza'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('Cancel'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
+                  child: const Text('Delete Pizza')),
+            ]
           ],
         ),
       ],
