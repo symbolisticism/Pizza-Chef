@@ -130,115 +130,124 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             },
           ),
         ),
-        ElevatedButton(
-          onPressed: () async {
-            // get the current time
-            final now = DateTime.now();
+        Row(
+          children: [
+            ElevatedButton(
+              onPressed: () async {
+                // get the current time
+                final now = DateTime.now();
 
-            // sort the list to make it easier to compare later
-            selectedToppings = (selectedToppings..sort()).toList();
+                // sort the list to make it easier to compare later
+                selectedToppings = (selectedToppings..sort()).toList();
 
-            // create the pizza object
-            Pizza pizza = Pizza(
-              pizzaSize: selectedSize,
-              toppings: selectedToppings,
-              sauce: selectedSauce,
-              crustType: selectedCrust,
-              timestamp: now,
-            );
-
-            // get number of pizzas in the cart
-            CollectionReference cart = db.collection('cart');
-            QuerySnapshot snapshot = await cart.get();
-            int numberOfPizzas = snapshot.docs.length;
-
-            // if the order is full
-            if (numberOfPizzas >= 5) {
-              if (!context.mounted) return;
-              ScaffoldMessenger.of(context).clearSnackBars();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text(
-                      'You have reached the limit of pizzas. Please remove one before creating another one.'),
-                ),
-              );
-              return;
-            }
-
-            // check if an identical pizza already exists in the database
-            for (var doc in snapshot.docs) {
-              final recordPizzaSize = doc.get('pizzaSize') as String;
-              final recordSauce = doc.get('sauce') as String;
-              final recordCrust = doc.get('thinCrust') as String;
-
-              // list manipulation for comparison
-              dynamic recordToppings = doc.get('toppings') as List<dynamic>;
-              recordToppings = List<String>.from(recordToppings);
-              recordToppings = (recordToppings..sort()).toList();
-
-              if (pizza.pizzaSize.label == recordPizzaSize &&
-                  pizza.sauce.label == recordSauce &&
-                  pizza.crustType.label == recordCrust &&
-                  const ListEquality().equals(recordToppings, pizza.toppings)) {
-                // check if context is mounted
-                if (!context.mounted) {
-                  logger.d('Context not mounted');
-                  return;
-                }
-                // tell user that there's already an identical pizza in the cart
-                ScaffoldMessenger.of(context).clearSnackBars();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                        'An identical pizza is already in your cart. Please make this one unique before proceeding.'),
-                  ),
+                // create the pizza object
+                Pizza pizza = Pizza(
+                  pizzaSize: selectedSize,
+                  toppings: selectedToppings,
+                  sauce: selectedSauce,
+                  crustType: selectedCrust,
+                  timestamp: now,
                 );
 
-                return;
-              }
-            }
+                // get number of pizzas in the cart
+                CollectionReference cart = db.collection('cart');
+                QuerySnapshot snapshot = await cart.get();
+                int numberOfPizzas = snapshot.docs.length;
 
-            logger.d('Pizza ID: $pizzaId');
-            logger.d('Pizza ID Runtime Type: ${pizzaId.runtimeType}');
+                // if the order is full
+                if (numberOfPizzas >= 5) {
+                  if (!context.mounted) return;
+                  ScaffoldMessenger.of(context).clearSnackBars();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          'You have reached the limit of pizzas. Please remove one before creating another one.'),
+                    ),
+                  );
+                  return;
+                }
 
-            try {
-              if (pizzaUpdate != null &&
-                  pizzaUpdate! &&
-                  pizzaId != null &&
-                  pizzaId!.isNotEmpty) {
-                await db.collection('cart').doc(pizzaId).update({
-                  'pizzaSize': selectedSize.label,
-                  'sauce': selectedSauce.label,
-                  'thinCrust': selectedCrust.label,
-                  'toppings': selectedToppings,
-                  'timestamp': now,
-                });
-              } else {
-                await db.collection('cart').doc(pizza.id).set(pizza.toMap());
-              }
-            } catch (e) {
-              logger
-                  .e(e);
-            }
+                // check if an identical pizza already exists in the database
+                for (var doc in snapshot.docs) {
+                  final recordPizzaSize = doc.get('pizzaSize') as String;
+                  final recordSauce = doc.get('sauce') as String;
+                  final recordCrust = doc.get('thinCrust') as String;
 
-            if (!context.mounted) {
-              logger.e("Context not mounted");
-              return;
-            }
+                  // list manipulation for comparison
+                  dynamic recordToppings = doc.get('toppings') as List<dynamic>;
+                  recordToppings = List<String>.from(recordToppings);
+                  recordToppings = (recordToppings..sort()).toList();
 
-            Navigator.of(context).pop();
-            ScaffoldMessenger.of(context).clearSnackBars();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text((pizzaUpdate != null && pizzaUpdate!)
-                    ? 'You have successfully updated your pizza.'
-                    : 'Your pizza has been successfully added.'),
-              ),
-            );
-          },
-          child: Text((pizzaUpdate != null && pizzaUpdate!)
-              ? 'Update Pizza'
-              : 'Add to Cart'),
+                  if (pizza.pizzaSize.label == recordPizzaSize &&
+                      pizza.sauce.label == recordSauce &&
+                      pizza.crustType.label == recordCrust &&
+                      const ListEquality()
+                          .equals(recordToppings, pizza.toppings)) {
+                    // check if context is mounted
+                    if (!context.mounted) {
+                      logger.d('Context not mounted');
+                      return;
+                    }
+                    // tell user that there's already an identical pizza in the cart
+                    ScaffoldMessenger.of(context).clearSnackBars();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text(
+                            'An identical pizza is already in your cart. Please make this one unique before proceeding.'),
+                      ),
+                    );
+
+                    return;
+                  }
+                }
+
+                logger.d('Pizza ID: $pizzaId');
+                logger.d('Pizza ID Runtime Type: ${pizzaId.runtimeType}');
+
+                try {
+                  if (pizzaUpdate != null &&
+                      pizzaUpdate! &&
+                      pizzaId != null &&
+                      pizzaId!.isNotEmpty) {
+                    await db.collection('cart').doc(pizzaId).update({
+                      'pizzaSize': selectedSize.label,
+                      'sauce': selectedSauce.label,
+                      'thinCrust': selectedCrust.label,
+                      'toppings': selectedToppings,
+                      'timestamp': now,
+                    });
+                  } else {
+                    await db
+                        .collection('cart')
+                        .doc(pizza.id)
+                        .set(pizza.toMap());
+                  }
+                } catch (e) {
+                  logger.e(e);
+                }
+
+                if (!context.mounted) {
+                  logger.e("Context not mounted");
+                  return;
+                }
+
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).clearSnackBars();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text((pizzaUpdate != null && pizzaUpdate!)
+                        ? 'You have successfully updated your pizza.'
+                        : 'Your pizza has been successfully added.'),
+                  ),
+                );
+              },
+              child: Text((pizzaUpdate != null && pizzaUpdate!)
+                  ? 'Update Pizza'
+                  : 'Add to Cart'),
+            ),
+            if (pizzaUpdate != null && pizzaUpdate!) const Spacer(),
+            TextButton(onPressed: () {}, child: const Text('Delete Pizza'))
+          ],
         ),
       ],
     );
