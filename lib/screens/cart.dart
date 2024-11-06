@@ -5,6 +5,7 @@ import 'package:pizza_chef/data/pizza_crust.dart';
 import 'package:pizza_chef/data/pizza_sauce.dart';
 import 'package:pizza_chef/data/pizza_size.dart';
 import 'package:pizza_chef/models/pizza.dart';
+import 'package:pizza_chef/widgets/order_form_widget.dart';
 
 final db = FirebaseFirestore.instance;
 var logger = Logger(printer: PrettyPrinter());
@@ -19,11 +20,6 @@ class Cart extends StatefulWidget {
 class _CartState extends State<Cart> {
   Widget? content;
   Map<String, Pizza> pizzas = {};
-
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,15 +122,38 @@ class _CartState extends State<Cart> {
         itemCount: pizzas.length,
         itemBuilder: (context, index) {
           List<Pizza> values = pizzas.values.toList();
+          List<String> keys = pizzas.keys.toList();
 
+          String key = keys[index];
           Pizza value = values[index];
 
           return ListTile(
             // title: Text(key),
             title: Text(value.toString()),
             leading: const Icon(Icons.done, color: Colors.green),
-            trailing:
-                IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
+            trailing: IconButton(
+                onPressed: () {
+                  showModalBottomSheet(
+                      isScrollControlled: true,
+                      context: context,
+                      builder: (context) {
+                        return FractionallySizedBox(
+                          heightFactor: 0.9,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: OrderFormWidget(
+                              selectedSize: value.pizzaSize,
+                              selectedSauce: value.sauce,
+                              selectedCrust: value.crustType,
+                              selectedToppings: value.toppings,
+                              update: true,
+                              id: key,
+                            ),
+                          ),
+                        );
+                      });
+                },
+                icon: const Icon(Icons.edit)),
           );
         },
       ),
