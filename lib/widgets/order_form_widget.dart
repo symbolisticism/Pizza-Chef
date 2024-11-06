@@ -53,7 +53,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -199,10 +198,27 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
               }
             }
 
+            logger.d('Pizza ID: $pizzaId');
+            logger.d('Pizza ID Runtime Type: ${pizzaId.runtimeType}');
+
             try {
-              await db.collection('cart').doc(pizza.id).set(pizza.toMap());
+              if (pizzaUpdate != null &&
+                  pizzaUpdate! &&
+                  pizzaId != null &&
+                  pizzaId!.isNotEmpty) {
+                await db.collection('cart').doc(pizzaId).update({
+                  'pizzaSize': selectedSize.label,
+                  'sauce': selectedSauce.label,
+                  'thinCrust': selectedCrust.label,
+                  'toppings': selectedToppings,
+                  'timestamp': now,
+                });
+              } else {
+                await db.collection('cart').doc(pizza.id).set(pizza.toMap());
+              }
             } catch (e) {
-              logger.e(e);
+              logger
+                  .e(e);
             }
 
             if (!context.mounted) {
@@ -212,10 +228,17 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
 
             Navigator.of(context).pop();
             ScaffoldMessenger.of(context).clearSnackBars();
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-                content: Text('Your pizza has been successfully added.')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text((pizzaUpdate != null && pizzaUpdate!)
+                    ? 'You have successfully updated your pizza.'
+                    : 'Your pizza has been successfully added.'),
+              ),
+            );
           },
-          child: const Text('Add to Cart'),
+          child: Text((pizzaUpdate != null && pizzaUpdate!)
+              ? 'Update Pizza'
+              : 'Add to Cart'),
         ),
       ],
     );
