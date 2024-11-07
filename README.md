@@ -1,7 +1,7 @@
 # Pizza-Chef
 This is a pizza ordering application. You can create pizzas, view them in your cart, update them in your cart, and delete them if you want to start from scratch.
 
-<div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+<div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
   <img src="assets/flutter_04.png" alt="Home Screen" width="300"/>
   <img src="assets/flutter_03.png" alt="Order Screen" width="300"/>
   <img src="assets/flutter_09.png" alt="Pizza Added" width="300"/>
