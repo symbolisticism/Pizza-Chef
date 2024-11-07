@@ -8,5 +8,7 @@ This is a pizza ordering application. You can create pizzas, view them in your c
 ![Update Pizza](assets/flutter_11.png)
 ![Delete Pizza Dialog](assets/flutter_12.png)
 
+<img src="assets/flutter_04.png" alt="Home Page" width="300"/>
+
 # Installation
 
