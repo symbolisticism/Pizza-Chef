@@ -37,6 +37,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
   late PizzaSauce selectedSauce;
   late PizzaCrust selectedCrust;
   late List<String> selectedToppings;
+  late List<String> tempSelectedToppings;
   String? pizzaId;
   bool? pizzaUpdate;
 
@@ -49,11 +50,15 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
     selectedToppings = widget.selectedToppings;
     pizzaId = widget.id;
     pizzaUpdate = widget.update;
+
+    if (pizzaUpdate != null && pizzaUpdate!) {
+      tempSelectedToppings = List.from(selectedToppings);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Try wrapping this column with a SingleChildScrollView to fix rendering on the web
+    bool validPizzaUpdate = (pizzaUpdate != null && pizzaUpdate!);
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -119,13 +124,23 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                 return CheckboxListTile(
                   tristate: false,
                   title: Text(toppings[index]),
-                  value: selectedToppings.contains(toppings[index]),
+                  value: validPizzaUpdate
+                      ? tempSelectedToppings.contains(toppings[index])
+                      : selectedToppings.contains(toppings[index]),
                   onChanged: (bool? value) {
                     setState(() {
                       if (value == true) {
-                        selectedToppings.add(toppings[index]);
+                        if (validPizzaUpdate) {
+                          tempSelectedToppings.add(toppings[index]);
+                        } else {
+                          selectedToppings.add(toppings[index]);
+                        }
                       } else {
-                        selectedToppings.remove(toppings[index]);
+                        if (validPizzaUpdate) {
+                          tempSelectedToppings.remove(toppings[index]);
+                        } else {
+                          selectedToppings.remove(toppings[index]);
+                        }
                       }
                     });
                   },
@@ -139,10 +154,10 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                 onPressed: () async {
                   // get the current time
                   final now = DateTime.now();
-      
+
                   // sort the list to make it easier to compare later
                   selectedToppings = (selectedToppings..sort()).toList();
-      
+
                   // create the pizza object
                   Pizza pizza = Pizza(
                     pizzaSize: selectedSize,
@@ -151,12 +166,12 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                     crustType: selectedCrust,
                     timestamp: now,
                   );
-      
+
                   // get number of pizzas in the cart
                   CollectionReference cart = db.collection('cart');
                   QuerySnapshot snapshot = await cart.get();
                   int numberOfPizzas = snapshot.docs.length;
-      
+
                   // if the order is full
                   if (numberOfPizzas >= 5) {
                     if (!context.mounted) return;
@@ -169,18 +184,19 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                     );
                     return;
                   }
-      
+
                   // check if an identical pizza already exists in the database
                   for (var doc in snapshot.docs) {
                     final recordPizzaSize = doc.get('pizzaSize') as String;
                     final recordSauce = doc.get('sauce') as String;
                     final recordCrust = doc.get('thinCrust') as String;
-      
+
                     // list manipulation for comparison
-                    dynamic recordToppings = doc.get('toppings') as List<dynamic>;
+                    dynamic recordToppings =
+                        doc.get('toppings') as List<dynamic>;
                     recordToppings = List<String>.from(recordToppings);
                     recordToppings = (recordToppings..sort()).toList();
-      
+
                     if (pizza.pizzaSize.label == recordPizzaSize &&
                         pizza.sauce.label == recordSauce &&
                         pizza.crustType.label == recordCrust &&
@@ -193,27 +209,27 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                       }
                       // tell user that there's already an identical pizza in the cart
                       ScaffoldMessenger.of(context).clearSnackBars();
+                      // TODO: This message pops up when updating a pizza sometimes, but it doesn't behave as expected
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
                               'An identical pizza is already in your cart. Please make this one unique before proceeding.'),
                         ),
                       );
-      
+
                       return;
                     }
                   }
-      
+
                   try {
-                    if (pizzaUpdate != null &&
-                        pizzaUpdate! &&
+                    if (validPizzaUpdate &&
                         pizzaId != null &&
                         pizzaId!.isNotEmpty) {
                       await db.collection('cart').doc(pizzaId).update({
                         'pizzaSize': selectedSize.label,
                         'sauce': selectedSauce.label,
                         'thinCrust': selectedCrust.label,
-                        'toppings': selectedToppings,
+                        'toppings': tempSelectedToppings,
                         'timestamp': now,
                       });
                     } else {
@@ -225,13 +241,13 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                   } catch (e) {
                     logger.e(e);
                   }
-      
+
                   if (!context.mounted) {
                     logger.e("Context not mounted");
                     return;
                   }
-      
-                  if (pizzaUpdate != null && pizzaUpdate!) {
+
+                  if (validPizzaUpdate) {
                     Navigator.of(context).pop(true);
                   } else {
                     Navigator.of(context).pop(false);
@@ -239,17 +255,17 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                   ScaffoldMessenger.of(context).clearSnackBars();
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text((pizzaUpdate != null && pizzaUpdate!)
+                      content: Text(validPizzaUpdate
                           ? 'You have successfully updated your pizza.'
                           : 'Your pizza has been successfully added.'),
                     ),
                   );
                 },
-                child: Text((pizzaUpdate != null && pizzaUpdate!)
+                child: Text(validPizzaUpdate
                     ? 'Update Pizza'
                     : 'Add to Cart'),
               ),
-              if (pizzaUpdate != null && pizzaUpdate!) ...[
+              if (validPizzaUpdate) ...[
                 const Spacer(),
                 TextButton(
                     onPressed: () {
@@ -273,7 +289,8 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                                   }
                                   Navigator.of(context).pop();
                                   Navigator.of(context).pop(true);
-                                  ScaffoldMessenger.of(context).clearSnackBars();
+                                  ScaffoldMessenger.of(context)
+                                      .clearSnackBars();
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
                                       content: Text('Your pizza was deleted.'),
