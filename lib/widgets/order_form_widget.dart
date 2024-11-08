@@ -63,6 +63,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // pizza size dropdown
           DropdownMenu<PizzaSize>(
             initialSelection: selectedSize,
             label: const Text('Pizza Size'),
@@ -80,6 +81,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             }).toList(),
           ),
           const SizedBox(height: 48),
+          // pizza sauce dropdown
           DropdownMenu<PizzaSauce>(
             initialSelection: selectedSauce,
             label: const Text('Pizza Sauce'),
@@ -97,6 +99,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             }).toList(),
           ),
           const SizedBox(height: 48),
+          // pizza crust dropdown
           DropdownMenu<PizzaCrust>(
             initialSelection: selectedCrust,
             label: const Text('Pizza Crust'),
@@ -116,6 +119,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
           const SizedBox(height: 48),
           const Text('Scroll through the toppings:'),
           // TODO: Clear the changes to the toppings after the user exits without saving
+          // Sized box containing toppings list
           SizedBox(
             height: 300,
             child: ListView.builder(
@@ -174,14 +178,13 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
 
                   // if the order is full
                   if (numberOfPizzas >= 5) {
-                    if (!context.mounted) return;
-                    ScaffoldMessenger.of(context).clearSnackBars();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            'You have reached the limit of pizzas. Please remove one before creating another one.'),
-                      ),
-                    );
+                    if (context.mounted) {
+                      showSnackBar(context,
+                          'You have reached the limit of pizzas. Please remove one before creating another one.');
+                    } else {
+                      logger.d('Context not mounted');
+                      return;
+                    }
                     return;
                   }
 
@@ -197,34 +200,48 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                     recordToppings = List<String>.from(recordToppings);
                     recordToppings = (recordToppings..sort()).toList();
 
-                    if (pizza.pizzaSize.label == recordPizzaSize &&
-                        pizza.sauce.label == recordSauce &&
-                        pizza.crustType.label == recordCrust &&
-                        const ListEquality()
-                            .equals(recordToppings, pizza.toppings)) {
-                      // check if context is mounted
-                      if (!context.mounted) {
+                    // TODO: this is currently comparing the regular toppings to the records rather than the temp toppings
+                    // it needs to compare the regular toppings when creating a pizza and the temp toppings when it's
+                    // updating a pizza
+
+                    // TODO: Figure out why the update bottom sheet isn't being popped off the stack here, and why the 
+                    // identical pizza message appears behind the modal bottom sheet
+                    bool identicalPizzaAlreadyExists =
+                        pizza.pizzaSize.label == recordPizzaSize &&
+                            pizza.sauce.label == recordSauce &&
+                            pizza.crustType.label == recordCrust &&
+                            const ListEquality()
+                                .equals(recordToppings, pizza.toppings);
+
+                    logger.d(
+                        "Pizza Size: ${pizza.pizzaSize.label == recordPizzaSize}");
+                    logger
+                        .d("Pizza Sauce: ${pizza.sauce.label == recordSauce}");
+                    logger.d(
+                        "Pizza Crust: ${pizza.crustType.label == recordCrust}");
+                    logger.d(
+                        "Toppings: ${const ListEquality().equals(recordToppings, pizza.toppings)}");
+
+                    if (identicalPizzaAlreadyExists) {
+                      // tell user that there's already an identical pizza in the cart
+                      if (context.mounted) {
+                        showSnackBar(context,
+                            'An identical pizza is already in your cart. Please make this one unique before proceeding.');
+                      } else {
                         logger.d('Context not mounted');
                         return;
                       }
-                      // tell user that there's already an identical pizza in the cart
-                      ScaffoldMessenger.of(context).clearSnackBars();
-                      // TODO: This message pops up when updating a pizza sometimes, but it doesn't behave as expected
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                              'An identical pizza is already in your cart. Please make this one unique before proceeding.'),
-                        ),
-                      );
 
                       return;
                     }
                   }
 
+                  bool validPizzaIdAndPizzaUpdate = validPizzaUpdate &&
+                      pizzaId != null &&
+                      pizzaId!.isNotEmpty;
+
                   try {
-                    if (validPizzaUpdate &&
-                        pizzaId != null &&
-                        pizzaId!.isNotEmpty) {
+                    if (validPizzaIdAndPizzaUpdate) {
                       await db.collection('cart').doc(pizzaId).update({
                         'pizzaSize': selectedSize.label,
                         'sauce': selectedSauce.label,
@@ -242,28 +259,24 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                     logger.e(e);
                   }
 
-                  if (!context.mounted) {
+                  if (context.mounted) {
+                    if (validPizzaUpdate) {
+                      Navigator.of(context).pop(true);
+                    } else {
+                      Navigator.of(context).pop(false);
+                    }
+
+                    showSnackBar(
+                        context,
+                        validPizzaUpdate
+                            ? 'You have successfully updated your pizza.'
+                            : 'Your pizza has been successfully added.');
+                  } else {
                     logger.e("Context not mounted");
                     return;
                   }
-
-                  if (validPizzaUpdate) {
-                    Navigator.of(context).pop(true);
-                  } else {
-                    Navigator.of(context).pop(false);
-                  }
-                  ScaffoldMessenger.of(context).clearSnackBars();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(validPizzaUpdate
-                          ? 'You have successfully updated your pizza.'
-                          : 'Your pizza has been successfully added.'),
-                    ),
-                  );
                 },
-                child: Text(validPizzaUpdate
-                    ? 'Update Pizza'
-                    : 'Add to Cart'),
+                child: Text(validPizzaUpdate ? 'Update Pizza' : 'Add to Cart'),
               ),
               if (validPizzaUpdate) ...[
                 const Spacer(),
@@ -289,13 +302,8 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                                   }
                                   Navigator.of(context).pop();
                                   Navigator.of(context).pop(true);
-                                  ScaffoldMessenger.of(context)
-                                      .clearSnackBars();
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text('Your pizza was deleted.'),
-                                    ),
-                                  );
+                                  showSnackBar(
+                                      context, 'Your pizza was deleted.');
                                 },
                                 child: const Text('Delete Pizza'),
                               ),
@@ -315,6 +323,15 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             ],
           ),
         ],
+      ),
+    );
+  }
+
+  void showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
       ),
     );
   }
