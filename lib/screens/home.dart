@@ -57,28 +57,24 @@ class Home extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () async {
                     if (await doesntHaveInternetConnection()) {
-                      // exit function if context is not mounted
-                      if (!context.mounted) {
+                      // ensure context is mounted
+                      if (context.mounted) {
+                        showSnackBar(context,
+                            'You are not connected to WiFi or a cellular network. Please connect and try again.');
+                      } else {
                         logger.d('Context not mounted');
                         return;
                       }
 
-                      showSnackBar(context,
-                          'You are not connected to WiFi or a cellular network. Please connect and try again.');
-
                       return;
                     }
 
-                    if (!context.mounted) {
+                    if (context.mounted) {
+                      navigateToDefaultOrderForm(context);
+                    } else {
                       logger.d('Context not mounted');
                       return;
                     }
-
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => OrderForm.defaultOrder(),
-                      ),
-                    );
                   },
                   child: const Text('Start Here'),
                 ),
@@ -111,6 +107,14 @@ class Home extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
+      ),
+    );
+  }
+
+  void navigateToDefaultOrderForm(BuildContext context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => OrderForm.defaultOrder(),
       ),
     );
   }
