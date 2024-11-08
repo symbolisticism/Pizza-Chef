@@ -147,3 +147,4 @@ lib/firebase_options.dart
 .firebase/
 .firebaserc
 .github/
+.vscode/
