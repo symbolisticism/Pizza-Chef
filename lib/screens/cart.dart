@@ -80,6 +80,7 @@ class _CartState extends State<Cart> {
           : PizzaCrust.regularCrust;
       timestamp = timestamp.toDate();
 
+      // add pizzas from database into the local pizzas map
       if (!pizzas.containsKey(pizzaId)) {
         pizzas[pizzaId] = Pizza(
           pizzaSize: pizzaSize,
