@@ -13,7 +13,7 @@ This is a pizza ordering application. You can create pizzas, view them in your c
 
 # Accessing the Pizza Chef app
 
-## 1. On a mobile phone (Android)
+## 1. Install on a mobile phone (Android)
 
 ### Prerequisites
 This app is only available on Android. To download the app to your Android device, ensure that you have your device, a Windows PC, and a cable connecting your device to your Windows PC. Plug the cable into your device, and plug the other end of the cable into your PC before beginning.
@@ -23,6 +23,8 @@ If you are downloading the app onto a mobile device, the simplest way to do this
 ### Instructions
 
 1. Locate the file named `pizza-chef.apk` in the repository above and click on it.
+<img src="assets/documentation/adb_download.png"/>
+
 2. On the page it brings you to, there is a menu button with three dots near the top right corner. Click on that.
 <img src="assets/documentation/menu_button.png"/>
 
@@ -40,3 +42,7 @@ If you are downloading the app onto a mobile device, the simplest way to do this
 
 9. If you've done all that correctly, you will see a message stating that the streamed install is in progress, followed by a success message. You are now ready to open and interact with the app on your Android phone.
 <img src="assets/documentation/install_success.png"/>
+
+## 2. On the web
+To access the web version of the Pizza Chef app, open [this link](https://pizza-chef-873cf.web.app).
+
