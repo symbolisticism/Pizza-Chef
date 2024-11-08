@@ -56,24 +56,15 @@ class Home extends StatelessWidget {
               children: [
                 ElevatedButton(
                   onPressed: () async {
-                    // check if the device is connected to the internet first
-                    final List<ConnectivityResult> connectivityResult =
-                        await Connectivity().checkConnectivity();
-
-                    if (!connectivityResult.contains(ConnectivityResult.wifi) &&
-                        !connectivityResult
-                            .contains(ConnectivityResult.mobile)) {
+                    if (await doesntHaveInternetConnection()) {
+                      // exit function if context is not mounted
                       if (!context.mounted) {
                         logger.d('Context not mounted');
                         return;
                       }
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text(
-                              'You are not connected to WiFi or a cellular network. Please connect and try again.'),
-                        ),
-                      );
+                      showSnackBar(context,
+                          'You are not connected to WiFi or a cellular network. Please connect and try again.');
 
                       return;
                     }
@@ -103,6 +94,23 @@ class Home extends StatelessWidget {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const Cart(),
+      ),
+    );
+  }
+
+  Future<bool> doesntHaveInternetConnection() async {
+    // check if the device is connected to the internet first
+    final List<ConnectivityResult> connectivityResult =
+        await Connectivity().checkConnectivity();
+    return !connectivityResult.contains(ConnectivityResult.wifi) &&
+        !connectivityResult.contains(ConnectivityResult.mobile);
+  }
+
+  void showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
       ),
     );
   }
