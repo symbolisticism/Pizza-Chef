@@ -4,6 +4,7 @@ import 'package:pizza_chef/screens/order_form.dart';
 import 'package:pizza_chef/screens/cart.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:logger/logger.dart';
+import 'package:pizza_chef/widgets/shopping_cart_badge.dart';
 
 var logger = Logger(printer: PrettyPrinter());
 
@@ -12,12 +13,15 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final firebaseStream =
+        FirebaseFirestore.instance.collection('cart').snapshots();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pizza Chef'),
         actions: [
           StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection('cart').snapshots(),
+            stream: firebaseStream,
             builder: (context, snapshot) {
               int itemCount = 0;
               if (snapshot.hasData) {
@@ -26,39 +30,9 @@ class Home extends StatelessWidget {
 
               return IconButton(
                 onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const Cart(),
-                    ),
-                  );
+                  navigateToCart(context);
                 },
-                icon: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    const Icon(Icons.shopping_cart),
-                    if (itemCount > 0) ...[
-                      Positioned(
-                        right: -9,
-                        top: -9,
-                        child: Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          child: Text(
-                            '$itemCount',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
+                icon: ShoppingCartWithBadge(itemCount: itemCount),
               );
             },
           ),
@@ -82,7 +56,6 @@ class Home extends StatelessWidget {
               children: [
                 ElevatedButton(
                   onPressed: () async {
-
                     // check if the device is connected to the internet first
                     final List<ConnectivityResult> connectivityResult =
                         await Connectivity().checkConnectivity();
@@ -122,6 +95,14 @@ class Home extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  void navigateToCart(context) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const Cart(),
       ),
     );
   }
