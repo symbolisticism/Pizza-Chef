@@ -142,3 +142,8 @@ app.*.symbols
 android/app/google-services.json
 firebase.json
 lib/firebase_options.dart
+
+# Firebase Deploy
+.firebase/
+.firebaserc
+.github/
