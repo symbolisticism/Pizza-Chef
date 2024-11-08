@@ -44,5 +44,5 @@ If you are downloading the app onto a mobile device, the simplest way to do this
 <img src="assets/documentation/install_success.png"/>
 
 ## 2. On the web
-To access the web version of the Pizza Chef app, open [this link](https://pizza-chef-873cf.web.app).
+To access the web version of the Pizza Chef app, open [this link](https://pizza-chef-873cf.web.app){:target="_blank"}.
 
