@@ -12,13 +12,22 @@ class Pizza {
     required this.sauce,
     required this.crustType,
     required this.timestamp,
+  }) : id = uuid.v1();
+
+  Pizza.withId({
+    required this.pizzaSize,
+    required this.toppings,
+    required this.sauce,
+    required this.crustType,
+    required this.timestamp,
+    required this.id,
   });
 
   final PizzaSize pizzaSize;
   final List<String> toppings;
   final PizzaSauce sauce;
   final PizzaCrust crustType;
-  final id = uuid.v1();
+  final String id;
   final DateTime timestamp;
 
   Map<String, dynamic> toMap() {
@@ -50,10 +59,10 @@ class Pizza {
   }
 
   @override
-    @override
+  @override
   int get hashCode =>
-      crustType.hashCode ^ 
-      sauce.hashCode ^ 
-      pizzaSize.hashCode ^ 
+      crustType.hashCode ^
+      sauce.hashCode ^
+      pizzaSize.hashCode ^
       toppings.hashCode;
 }
