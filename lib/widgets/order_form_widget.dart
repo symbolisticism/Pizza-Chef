@@ -37,7 +37,16 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
   late PizzaSauce selectedSauce;
   late PizzaCrust selectedCrust;
   late List<String> selectedToppings;
-  late List<String> tempSelectedToppings;
+
+  // TODO: put logic in the order form widget to toggle whether the temp variables
+  // todo: are being used for an update or the regular ones are being used to create a new pizza
+  // temp variables in case of an update
+  late List<String>? tempSelectedToppings;
+  late PizzaSize? tempPizzaSize;
+  late PizzaSauce? tempPizzaSauce;
+  late PizzaCrust? tempPizzaCrust;
+
+  // optional parameters for an update
   String? pizzaId;
   bool? pizzaUpdate;
 
@@ -53,6 +62,9 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
 
     if (pizzaUpdate != null && pizzaUpdate!) {
       tempSelectedToppings = List.from(selectedToppings);
+      tempPizzaSize = selectedSize;
+      tempPizzaSauce = selectedSauce;
+      tempPizzaCrust = selectedCrust;
     }
   }
 
@@ -69,7 +81,11 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             label: const Text('Pizza Size'),
             onSelected: (PizzaSize? size) {
               setState(() {
-                selectedSize = size!;
+                if (validPizzaUpdate) {
+                  tempPizzaSize = size;
+                } else {
+                  selectedSize = size!;
+                }
               });
             },
             dropdownMenuEntries: PizzaSize.values
@@ -87,6 +103,9 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             label: const Text('Pizza Sauce'),
             onSelected: (PizzaSauce? sauce) {
               setState(() {
+                if (validPizzaUpdate) {
+                  tempPizzaSauce = sauce!;
+                }
                 selectedSauce = sauce!;
               });
             },
@@ -105,7 +124,11 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             label: const Text('Pizza Crust'),
             onSelected: (PizzaCrust? crust) {
               setState(() {
-                selectedCrust = crust!;
+                if (validPizzaUpdate) {
+                  tempPizzaCrust = crust!;
+                } else {
+                  selectedCrust = crust!;
+                }
               });
             },
             dropdownMenuEntries: PizzaCrust.values
@@ -129,19 +152,19 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                   tristate: false,
                   title: Text(toppings[index]),
                   value: validPizzaUpdate
-                      ? tempSelectedToppings.contains(toppings[index])
+                      ? tempSelectedToppings!.contains(toppings[index])
                       : selectedToppings.contains(toppings[index]),
                   onChanged: (bool? value) {
                     setState(() {
                       if (value == true) {
                         if (validPizzaUpdate) {
-                          tempSelectedToppings.add(toppings[index]);
+                          tempSelectedToppings!.add(toppings[index]);
                         } else {
                           selectedToppings.add(toppings[index]);
                         }
                       } else {
                         if (validPizzaUpdate) {
-                          tempSelectedToppings.remove(toppings[index]);
+                          tempSelectedToppings!.remove(toppings[index]);
                         } else {
                           selectedToppings.remove(toppings[index]);
                         }
@@ -156,38 +179,76 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             children: [
               ElevatedButton(
                 onPressed: () async {
+                  // TODO: separate this into update logic and creation logic
+
+                  // both
                   // get the current time
                   final now = DateTime.now();
 
+                  // both
                   // sort the list to make it easier to compare later
-                  selectedToppings = (selectedToppings..sort()).toList();
-
-                  // create the pizza object
-                  Pizza pizza = Pizza(
-                    pizzaSize: selectedSize,
-                    toppings: selectedToppings,
-                    sauce: selectedSauce,
-                    crustType: selectedCrust,
-                    timestamp: now,
-                  );
-
-                  // get number of pizzas in the cart
-                  CollectionReference cart = db.collection('cart');
-                  QuerySnapshot snapshot = await cart.get();
-                  int numberOfPizzas = snapshot.docs.length;
-
-                  // if the order is full
-                  if (numberOfPizzas >= 5) {
-                    if (context.mounted) {
-                      showSnackBar(context,
-                          'You have reached the limit of pizzas. Please remove one before creating another one.');
-                    } else {
-                      logger.d('Context not mounted');
-                      return;
-                    }
-                    return;
+                  if (validPizzaUpdate) {
+                    selectedToppings = (tempSelectedToppings!..sort()).toList();
+                  } else {
+                    selectedToppings = (selectedToppings..sort()).toList();
                   }
 
+                  // only instantiate if a pizza is being created
+                  Pizza pizza;
+                  int numberOfPizzas;
+
+                  // these are needed for both update and creation, since we
+                  // have to check for an identical pizza in the database
+                  CollectionReference cart = db.collection('cart');
+                  QuerySnapshot snapshot = await cart.get();
+
+                  bool validPizzaId = pizzaId != null && pizzaId!.isNotEmpty;
+
+                  // creation
+                  // create the pizza object
+                  if (!validPizzaUpdate) {
+                    pizza = Pizza(
+                      pizzaSize: selectedSize,
+                      toppings: selectedToppings,
+                      sauce: selectedSauce,
+                      crustType: selectedCrust,
+                      timestamp: now,
+                    );
+
+                    // creation
+                    // get number of pizzas in the cart
+                    numberOfPizzas = snapshot.docs.length;
+
+                    // creation
+                    // if the order is full
+                    if (numberOfPizzas >= 5) {
+                      if (context.mounted) {
+                        showSnackBar(context,
+                            'You have reached the limit of pizzas. Please remove one before creating another one.');
+                      } else {
+                        logger.d('Context not mounted');
+                        return;
+                      }
+                      return;
+                    }
+                  } else {
+                    // TODO: This is creating a new pizza in the database because it's giving it a new ID
+                    if (validPizzaId) {
+                      pizza = Pizza.withId(
+                        pizzaSize: tempPizzaSize!,
+                        toppings: tempSelectedToppings!,
+                        sauce: tempPizzaSauce!,
+                        crustType: tempPizzaCrust!,
+                        timestamp: now,
+                        id: pizzaId!,
+                      );
+                    } else {
+                      logger.d('Invalid Pizza ID.');
+                      return;
+                    }
+                  }
+
+                  // both
                   // check if an identical pizza already exists in the database
                   for (var doc in snapshot.docs) {
                     final recordPizzaSize = doc.get('pizzaSize') as String;
@@ -203,15 +264,26 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                     // TODO: this is currently comparing the regular toppings to the records rather than the temp toppings
                     // it needs to compare the regular toppings when creating a pizza and the temp toppings when it's
                     // updating a pizza
-
-                    // TODO: Figure out why the update bottom sheet isn't being popped off the stack here, and why the 
+                    // TODO: Figure out why the update bottom sheet isn't being popped off the stack here, and why the
                     // identical pizza message appears behind the modal bottom sheet
-                    bool identicalPizzaAlreadyExists =
-                        pizza.pizzaSize.label == recordPizzaSize &&
-                            pizza.sauce.label == recordSauce &&
-                            pizza.crustType.label == recordCrust &&
-                            const ListEquality()
-                                .equals(recordToppings, pizza.toppings);
+
+                    bool identicalPizzaAlreadyExists;
+
+                    if (validPizzaUpdate) {
+                      identicalPizzaAlreadyExists =
+                          pizza.pizzaSize.label == recordPizzaSize &&
+                              pizza.sauce.label == recordSauce &&
+                              pizza.crustType.label == recordCrust &&
+                              const ListEquality()
+                                  .equals(recordToppings, pizza.toppings);
+                    } else {
+                      identicalPizzaAlreadyExists =
+                          pizza.pizzaSize.label == recordPizzaSize &&
+                              pizza.sauce.label == recordSauce &&
+                              pizza.crustType.label == recordCrust &&
+                              const ListEquality()
+                                  .equals(recordToppings, pizza.toppings);
+                    }
 
                     logger.d(
                         "Pizza Size: ${pizza.pizzaSize.label == recordPizzaSize}");
@@ -236,25 +308,22 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                     }
                   }
 
-                  bool validPizzaIdAndPizzaUpdate = validPizzaUpdate &&
-                      pizzaId != null &&
-                      pizzaId!.isNotEmpty;
+                  if (validPizzaUpdate && !validPizzaId) {
+                    if (context.mounted) {
+                      showSnackBar(context, 'Pizza ID is invalid.');
+                      logger.d('Pizza ID is invalid');
+                      return;
+                    } else {
+                      logger.d('Context not mounted.');
+                      return;
+                    }
+                  }
 
                   try {
-                    if (validPizzaIdAndPizzaUpdate) {
-                      await db.collection('cart').doc(pizzaId).update({
-                        'pizzaSize': selectedSize.label,
-                        'sauce': selectedSauce.label,
-                        'thinCrust': selectedCrust.label,
-                        'toppings': tempSelectedToppings,
-                        'timestamp': now,
-                      });
-                    } else {
-                      await db
-                          .collection('cart')
-                          .doc(pizza.id)
-                          .set(pizza.toMap());
-                    }
+                    await db
+                        .collection('cart')
+                        .doc(pizza.id)
+                        .set(pizza.toMap());
                   } catch (e) {
                     logger.e(e);
                   }
