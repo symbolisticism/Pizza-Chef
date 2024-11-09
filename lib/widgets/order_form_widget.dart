@@ -38,8 +38,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
   late PizzaCrust selectedCrust;
   late List<String> selectedToppings;
 
-  // TODO: put logic in the order form widget to toggle whether the temp variables
-  // todo: are being used for an update or the regular ones are being used to create a new pizza
   // temp variables in case of an update
   late List<String>? tempSelectedToppings;
   late PizzaSize? tempPizzaSize;
@@ -141,7 +139,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
           ),
           const SizedBox(height: 48),
           const Text('Scroll through the toppings:'),
-          // TODO: Clear the changes to the toppings after the user exits without saving
           // Sized box containing toppings list
           SizedBox(
             height: 300,
@@ -179,13 +176,9 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             children: [
               ElevatedButton(
                 onPressed: () async {
-                  // TODO: separate this into update logic and creation logic
-
-                  // both
                   // get the current time
                   final now = DateTime.now();
 
-                  // both
                   // sort the list to make it easier to compare later
                   if (validPizzaUpdate) {
                     selectedToppings = (tempSelectedToppings!..sort()).toList();
@@ -204,7 +197,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
 
                   bool validPizzaId = pizzaId != null && pizzaId!.isNotEmpty;
 
-                  // creation
                   // create the pizza object
                   if (!validPizzaUpdate) {
                     pizza = Pizza(
@@ -215,11 +207,9 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                       timestamp: now,
                     );
 
-                    // creation
                     // get number of pizzas in the cart
                     numberOfPizzas = snapshot.docs.length;
 
-                    // creation
                     // if the order is full
                     if (numberOfPizzas >= 5) {
                       if (context.mounted) {
@@ -232,7 +222,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                       return;
                     }
                   } else {
-                    // TODO: This is creating a new pizza in the database because it's giving it a new ID
                     if (validPizzaId) {
                       pizza = Pizza.withId(
                         pizzaSize: tempPizzaSize!,
@@ -248,7 +237,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                     }
                   }
 
-                  // both
                   // check if an identical pizza already exists in the database
                   for (var doc in snapshot.docs) {
                     final recordPizzaSize = doc.get('pizzaSize') as String;
@@ -260,12 +248,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                         doc.get('toppings') as List<dynamic>;
                     recordToppings = List<String>.from(recordToppings);
                     recordToppings = (recordToppings..sort()).toList();
-
-                    // TODO: this is currently comparing the regular toppings to the records rather than the temp toppings
-                    // it needs to compare the regular toppings when creating a pizza and the temp toppings when it's
-                    // updating a pizza
-                    // TODO: Figure out why the update bottom sheet isn't being popped off the stack here, and why the
-                    // identical pizza message appears behind the modal bottom sheet
 
                     bool identicalPizzaAlreadyExists;
 
@@ -285,20 +267,17 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                                   .equals(recordToppings, pizza.toppings);
                     }
 
-                    logger.d(
-                        "Pizza Size: ${pizza.pizzaSize.label == recordPizzaSize}");
-                    logger
-                        .d("Pizza Sauce: ${pizza.sauce.label == recordSauce}");
-                    logger.d(
-                        "Pizza Crust: ${pizza.crustType.label == recordCrust}");
-                    logger.d(
-                        "Toppings: ${const ListEquality().equals(recordToppings, pizza.toppings)}");
-
                     if (identicalPizzaAlreadyExists) {
                       // tell user that there's already an identical pizza in the cart
                       if (context.mounted) {
-                        showSnackBar(context,
-                            'An identical pizza is already in your cart. Please make this one unique before proceeding.');
+                        // a snackbar won't show over the modal bottom sheet, so we'll
+                        // show a dialog if the modal bottom sheet is up
+                        if (validPizzaUpdate) {
+                          showIdenticalPizzaDialog(context);
+                        } else {
+                          showSnackBar(context,
+                              'An identical pizza is already in your cart. Please make this one unique before proceeding.');
+                        }
                       } else {
                         logger.d('Context not mounted');
                         return;
@@ -350,42 +329,18 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
               if (validPizzaUpdate) ...[
                 const Spacer(),
                 TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('Cancel'),
+                ),
+                const Spacer(),
+                TextButton(
+                    style: TextButton.styleFrom(
+                      foregroundColor: Colors.red,
+                    ),
                     onPressed: () {
-                      showDialog<void>(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            title: const Text('Delete this pizza?'),
-                            content: const Text(
-                                'Are you sure you want to delete this pizza? This action cannot be undone.'),
-                            actions: [
-                              ElevatedButton(
-                                onPressed: () async {
-                                  await db
-                                      .collection('cart')
-                                      .doc(pizzaId)
-                                      .delete();
-                                  if (!context.mounted) {
-                                    logger.d('Context not mounted');
-                                    return;
-                                  }
-                                  Navigator.of(context).pop();
-                                  Navigator.of(context).pop(true);
-                                  showSnackBar(
-                                      context, 'Your pizza was deleted.');
-                                },
-                                child: const Text('Delete Pizza'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('Cancel'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
+                      showDeletePizzaDialog(context);
                     },
                     child: const Text('Delete Pizza')),
               ]
@@ -402,6 +357,59 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
       SnackBar(
         content: Text(message),
       ),
+    );
+  }
+
+  void showIdenticalPizzaDialog(BuildContext context) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('No Changes Made'),
+            content: const Text(
+                "Make changes, or if you like your pizza how it is, press 'Cancel'."),
+            actions: [
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'))
+            ],
+          );
+        });
+  }
+
+  void showDeletePizzaDialog(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Delete this pizza?'),
+          content: const Text(
+              'Are you sure you want to delete this pizza? This action cannot be undone.'),
+          actions: [
+            ElevatedButton(
+              onPressed: () async {
+                await db.collection('cart').doc(pizzaId).delete();
+                if (!context.mounted) {
+                  logger.d('Context not mounted');
+                  return;
+                }
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(true);
+                showSnackBar(context, 'Your pizza was deleted.');
+              },
+              child: const Text('Delete Pizza'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
