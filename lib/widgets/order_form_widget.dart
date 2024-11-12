@@ -74,6 +74,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // pizza size dropdown
+          // TODO: save these pizza values to the state
           DropdownMenu<PizzaSize>(
             initialSelection: selectedSize,
             label: const Text('Pizza Size'),
