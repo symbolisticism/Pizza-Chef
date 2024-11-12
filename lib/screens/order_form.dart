@@ -4,6 +4,7 @@ import 'package:pizza_chef/data/pizza_size.dart';
 import 'package:pizza_chef/data/pizza_crust.dart';
 import 'package:logger/logger.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:pizza_chef/widgets/nav_drawer.dart';
 import 'package:pizza_chef/widgets/order_form_widget.dart';
 
 var logger = Logger(printer: PrettyPrinter());
@@ -73,6 +74,7 @@ class _OrderFormState extends State<OrderForm> {
         }
       },
       child: Scaffold(
+        drawer: const NavDrawer('/order'),
         appBar: AppBar(
           title: const Text('Order'),
         ),
