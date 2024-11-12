@@ -33,7 +33,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late Future<Map<String, dynamic>> lastState;
+  late Future<Map<String, Object>> lastState;
   bool initializationComplete = false;
 
   @override
@@ -61,7 +61,7 @@ class _MyAppState extends State<MyApp> {
     }
 
     return Scaffold(
-      body: FutureBuilder<Map<String, dynamic>>(
+      body: FutureBuilder<Map<String, Object>>(
           future: lastState,
           builder: (context, snapshot) {
             // error
@@ -72,24 +72,26 @@ class _MyAppState extends State<MyApp> {
             }
 
             if (snapshot.hasData) {
-              Map<String, dynamic>? data = snapshot.data;
+              Map<String, Object>? data = snapshot.data;
 
               if (data != null) {
-                shouldResetLastState(data['lastOpened']);
+                shouldResetLastState(data['lastOpened'] as int);
 
                 switch (data['screen']) {
                   case 'cart':
                     return const Cart();
                   case 'order form':
                     // convert values back to correct data types
-                    Map<String, dynamic> newPizzaValues =
+                    logger.d(data);
+                    Map<String, Object> newPizzaValues =
                         convertPizzaValues(data);
 
                     return OrderForm(
-                        selectedSize: newPizzaValues['size'],
-                        selectedSauce: newPizzaValues['sauce'],
-                        selectedCrust: newPizzaValues['crust'],
-                        selectedToppings: newPizzaValues['toppings']);
+                        selectedSize: newPizzaValues['size'] as PizzaSize,
+                        selectedSauce: newPizzaValues['sauce'] as PizzaSauce,
+                        selectedCrust: newPizzaValues['crust'] as PizzaCrust,
+                        selectedToppings:
+                            newPizzaValues['toppings'] as List<String>);
                   default:
                     return const Home();
                 }
@@ -102,9 +104,9 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  Future<Map<String, dynamic>> loadState() async {
+  Future<Map<String, Object>> loadState() async {
     QuerySnapshot querySnapshot = await db.collection('state').get();
-    Map<String, dynamic> lastState = {};
+    Map<String, Object> lastState = {};
 
     for (var doc in querySnapshot.docs) {
       lastState['screen'] = doc.get('screen');
@@ -138,7 +140,7 @@ class _MyAppState extends State<MyApp> {
   Future<void> resetState() async {
     // current time
     int currentTime = DateTime.now().millisecondsSinceEpoch;
-    Map<String, dynamic> resetValues = {
+    Map<String, Object> resetValues = {
       'lastOpened': currentTime,
       'screen': 'home',
       // TODO: determine if null is the best value to reset the values to
@@ -152,7 +154,8 @@ class _MyAppState extends State<MyApp> {
     await db.collection('state').doc('1').set(resetValues);
   }
 
-  Map<String, dynamic> convertPizzaValues(Map<String, dynamic> pizzaValues) {
+  Map<String, Object> convertPizzaValues(Map<String, Object> pizzaValues) {
+    // TODO: I believe the NULL error is coming from in here
     PizzaSize size = pizzaValues['size'] == 'small'
         ? PizzaSize.small
         : pizzaValues['size'] == 'medium'
@@ -167,8 +170,12 @@ class _MyAppState extends State<MyApp> {
         : PizzaCrust.regularCrust;
 
     dynamic toppings = pizzaValues['toppings'];
-    toppings = List<String>.from(toppings);
-    toppings = (toppings..sort()).toList();
+    if (toppings != null) {
+      toppings = List<String>.from(toppings);
+      toppings = (toppings..sort()).toList();
+    } else {
+      toppings = <String>[];
+    }
 
     return {
       'size': size,
