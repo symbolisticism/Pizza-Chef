@@ -4,17 +4,45 @@ import 'package:pizza_chef/screens/order_form.dart';
 import 'package:pizza_chef/screens/cart.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:logger/logger.dart';
+import 'package:pizza_chef/widgets/nav_drawer.dart';
 import 'package:pizza_chef/widgets/shopping_cart_badge.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 var logger = Logger(printer: PrettyPrinter());
+final db = FirebaseFirestore.instance;
 
-class Home extends StatelessWidget {
+class Home extends StatefulWidget {
   const Home({super.key});
+
+  @override
+  State<Home> createState() => _HomeState();
+}
+
+class _HomeState extends State<Home> {
+  bool stateIsUpdated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    updateState().then((_) {
+      setState(() {
+        stateIsUpdated = true;
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final firebaseStream =
         FirebaseFirestore.instance.collection('cart').snapshots();
+
+    if (!stateIsUpdated) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -38,6 +66,7 @@ class Home extends StatelessWidget {
           ),
         ],
       ),
+      drawer: const NavDrawer('/home'),
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -117,5 +146,9 @@ class Home extends StatelessWidget {
         builder: (context) => OrderForm.defaultOrder(),
       ),
     );
+  }
+
+  Future<void> updateState() async {
+    await db.collection('state').doc('1').update({'screen': 'home'});
   }
 }
