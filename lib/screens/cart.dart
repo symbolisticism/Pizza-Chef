@@ -5,6 +5,7 @@ import 'package:pizza_chef/data/pizza_crust.dart';
 import 'package:pizza_chef/data/pizza_sauce.dart';
 import 'package:pizza_chef/data/pizza_size.dart';
 import 'package:pizza_chef/models/pizza.dart';
+import 'package:pizza_chef/widgets/nav_drawer.dart';
 import 'package:pizza_chef/widgets/order_form_widget.dart';
 
 final db = FirebaseFirestore.instance;
@@ -52,6 +53,7 @@ class _CartState extends State<Cart> {
         }
       },
       child: Scaffold(
+        drawer: const NavDrawer('/cart'),
         appBar: AppBar(
           title: const Text('Cart'),
         ),
