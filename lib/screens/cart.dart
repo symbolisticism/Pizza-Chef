@@ -21,34 +21,57 @@ class _CartState extends State<Cart> {
   Widget? content;
   Map<String, Pizza> pizzas = {};
   late Future<void> pizzasFuture;
+  bool stateIsUpdated = false;
 
   @override
   void initState() {
     super.initState();
     pizzasFuture = loadPizzas();
+    updateState().then((_) {
+      setState(() {
+        stateIsUpdated = true;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Cart'),
-      ),
-      body: FutureBuilder(
-        future: pizzasFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasError) {
-              logger.e(snapshot.error);
-              return Center(child: Text("${snapshot.error} has occurred."));
-            } else if (pizzas.isEmpty) {
-              return const Center(child: Text("There are no pizzas to display."));
-            } else {
-              return content!;
+    if (!stateIsUpdated) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) {
+          await db.collection('state').doc('1').update({'screen': 'home'});
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Cart'),
+        ),
+        body: FutureBuilder(
+          future: pizzasFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.done) {
+              if (snapshot.hasError) {
+                logger.e(snapshot.error);
+                return Center(child: Text("${snapshot.error} has occurred."));
+              } else if (pizzas.isEmpty) {
+                return const Center(
+                    child: Text("There are no pizzas to display."));
+              } else {
+                return content!;
+              }
             }
-          }
-          return const Center(child: CircularProgressIndicator());
-        },
+            return const Center(child: CircularProgressIndicator());
+          },
+        ),
       ),
     );
   }
@@ -148,5 +171,9 @@ class _CartState extends State<Cart> {
         },
       ),
     );
+  }
+
+  Future<void> updateState() async {
+    await db.collection('state').doc('1').update({'screen': 'cart'});
   }
 }
