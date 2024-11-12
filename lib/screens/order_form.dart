@@ -39,6 +39,7 @@ class _OrderFormState extends State<OrderForm> {
   late PizzaSauce selectedSauce;
   late PizzaCrust selectedCrust;
   late List<String> selectedToppings;
+  bool stateIsUpdated = false;
 
   @override
   void initState() {
@@ -47,25 +48,50 @@ class _OrderFormState extends State<OrderForm> {
     selectedSauce = widget.selectedSauce;
     selectedCrust = widget.selectedCrust;
     selectedToppings = widget.selectedToppings;
+    updateState().then((_) {
+      setState(() {
+        stateIsUpdated = true;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Order'),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: OrderFormWidget(
-            selectedSize: selectedSize,
-            selectedSauce: selectedSauce,
-            selectedCrust: selectedCrust,
-            selectedToppings: selectedToppings,
+    if (!stateIsUpdated) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return PopScope(
+      canPop: true,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) {
+          await db.collection('state').doc('1').update({'screen': 'home'});
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Order'),
+        ),
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: OrderFormWidget(
+              selectedSize: selectedSize,
+              selectedSauce: selectedSauce,
+              selectedCrust: selectedCrust,
+              selectedToppings: selectedToppings,
+            ),
           ),
         ),
       ),
     );
+  }
+
+  Future<void> updateState() async {
+    await db.collection('state').doc('1').update({'screen': 'order form'});
   }
 }
