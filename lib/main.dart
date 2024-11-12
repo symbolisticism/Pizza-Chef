@@ -42,21 +42,12 @@ class _MyAppState extends State<MyApp> {
 
     // app initialization
     WidgetsFlutterBinding.ensureInitialized();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const Home()),
-          (route) => false);
-    });
     initializeFirebase().then((_) {
       lastState = loadState();
       setState(() {
         initializationComplete = true;
       });
     });
-
-    // load in state
-    // lastState = loadState();
   }
 
   @override
@@ -85,11 +76,6 @@ class _MyAppState extends State<MyApp> {
 
               if (data != null) {
                 shouldResetLastState(data['lastOpened']);
-
-                // TODO: ensure the home screen is always on the bottom of the stack
-                // TODO: currently, the app remembers the state and delivers the
-                // TODO: relevant screen, but if it delivers the cart or order
-                // TODO: form page, there is no way to navigate back to home
 
                 switch (data['screen']) {
                   case 'cart':
@@ -137,7 +123,7 @@ class _MyAppState extends State<MyApp> {
 
   bool shouldResetLastState(int timestamp) {
     int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
-    int fiveMinutes = 10 *
+    int fiveMinutes = 20 *
         1000; // TODO: change this back to five minutes after testing, currently 10 seconds
     int timeElapsed = currentTimestamp - timestamp;
 
