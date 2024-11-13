@@ -48,6 +48,9 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
   String? pizzaId;
   bool? pizzaUpdate;
 
+  // loading
+  bool isLoading = false;
+
   @override
   void initState() {
     super.initState();
@@ -74,7 +77,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // pizza size dropdown
-          // TODO: save these pizza values to the state
           DropdownMenu<PizzaSize>(
             initialSelection: selectedSize,
             label: const Text('Pizza Size'),
@@ -88,7 +90,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                   await db
                       .collection('state')
                       .doc('1')
-                      .set({'size': selectedSize.label});
+                      .update({'pizzaValues.size': size.label});
                 }
               });
             },
@@ -116,7 +118,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                   await db
                       .collection('state')
                       .doc('1')
-                      .set({'sauce': selectedSauce});
+                      .update({'pizzaValues.sauce': sauce.label});
                 }
               });
             },
@@ -144,7 +146,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                   await db
                       .collection('state')
                       .doc('1')
-                      .set({'crust': selectedCrust});
+                      .update({'pizzaValues.crust': crust.label});
                 }
               });
             },
@@ -171,19 +173,13 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                       ? tempSelectedToppings!.contains(toppings[index])
                       : selectedToppings.contains(toppings[index]),
                   onChanged: (bool? value) {
-                    setState(() async {
+                    // do not do async stuff in setState
+                    setState(() {
                       if (value == true) {
                         if (validPizzaUpdate) {
                           tempSelectedToppings!.add(toppings[index]);
                         } else {
                           selectedToppings.add(toppings[index]);
-
-                          // update the state
-                          await db.collection('state').doc('1').update({
-                            'toppings': FieldValue.arrayUnion([toppings[index]])
-                          });
-
-                          // TODO: Check if the state update logic in Firebase actually works
                         }
                       } else {
                         if (validPizzaUpdate) {
@@ -193,6 +189,23 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                         }
                       }
                     });
+
+                    // Perform the database operations outside of setState
+                    if (value == true) {
+                      if (!validPizzaUpdate) {
+                        db.collection('state').doc('1').update({
+                          'pizzaValues.toppings':
+                              FieldValue.arrayUnion([toppings[index]])
+                        });
+                      }
+                    } else {
+                      if (!validPizzaUpdate) {
+                        db.collection('state').doc('1').update({
+                          'pizzaValues.toppings':
+                              FieldValue.arrayRemove([toppings[index]])
+                        });
+                      }
+                    }
                   },
                 );
               },
@@ -205,16 +218,12 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                   // get the current time
                   final now = DateTime.now();
 
-                  logger.d(selectedToppings);
-
                   // sort the list to make it easier to compare later
                   if (validPizzaUpdate) {
                     selectedToppings = (tempSelectedToppings!..sort()).toList();
                   } else {
                     selectedToppings = (selectedToppings..sort()).toList();
                   }
-
-                  logger.d(selectedToppings);
 
                   // only instantiate if a pizza is being created
                   Pizza pizza;
@@ -333,12 +342,18 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                         .collection('cart')
                         .doc(pizza.id)
                         .set(pizza.toMap());
+
+                    await db.collection('state').doc('1').update({
+                      'pizzaValues': {
+                        'crust': 'Thin Crust',
+                        'sauce': 'Red',
+                        'size': 'Small',
+                        'toppings': [],
+                      }
+                    });
                   } catch (e) {
                     logger.e(e);
                   }
-
-                  // TODO: Make sure to clear the saved state in Firebase after
-                  // saving the pizza
 
                   if (context.mounted) {
                     if (validPizzaUpdate) {
