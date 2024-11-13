@@ -17,12 +17,11 @@ var logger = Logger(printer: PrettyPrinter());
 // initialized, regardless of whether the state gets reset or not
 
 void main() async {
-
   // app initialization
-    WidgetsFlutterBinding.ensureInitialized();
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(MaterialApp(
     routes: {
@@ -46,6 +45,12 @@ class _MyAppState extends State<MyApp> {
   late Future<Map<String, dynamic>> lastState;
 
   @override
+  void initState() {
+    super.initState();
+    initializeState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final dbStream = db.collection('state').doc('1').snapshots();
 
@@ -62,7 +67,7 @@ class _MyAppState extends State<MyApp> {
             if (snapshot.hasData) {
               final data = snapshot.data!.data() as Map<String, dynamic>;
 
-              shouldResetLastState(data['lastOpened'] as int);
+              // shouldResetLastState(data['lastOpened'] as int);
 
               switch (data['screen']) {
                 case 'cart':
@@ -70,7 +75,8 @@ class _MyAppState extends State<MyApp> {
                 case 'order form':
                   // convert values back to correct data types
                   logger.d(data);
-                  Map<String, dynamic> newPizzaValues = convertPizzaValues(data);
+                  Map<String, dynamic> newPizzaValues =
+                      convertPizzaValues(data);
 
                   return OrderForm(
                       selectedSize: newPizzaValues['size'] as PizzaSize,
@@ -101,31 +107,10 @@ class _MyAppState extends State<MyApp> {
     return lastState;
   }
 
-  Future<void> initializeFirebase() async {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  }
-
-  bool shouldResetLastState(int timestamp) {
-    int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
-    int fiveMinutes = 60 *
-        1000; // TODO: change this back to five minutes after testing, currently 10 seconds
-    int timeElapsed = currentTimestamp - timestamp;
-
-    if (timeElapsed > fiveMinutes) {
-      resetState();
-      return true;
-    }
-
-    return false;
-  }
-
-  Future<void> resetState() async {
+  Future<void> resetState(int currentTime) async {
     // current time
-    int currentTime = DateTime.now().millisecondsSinceEpoch;
     Map<String, dynamic> resetValues = {
-      'lastOpened' : currentTime,
+      'lastOpened': currentTime,
       'screen': 'home',
       'pizzaValues': {
         'crust': 'thin crust',
@@ -165,5 +150,19 @@ class _MyAppState extends State<MyApp> {
       'sauce': sauce,
       'toppings': toppings,
     };
+  }
+
+  Future<void> initializeState() async {
+    DocumentSnapshot snapshot = await db.collection('state').doc('1').get();
+    final lastOpened = snapshot.get('lastOpened') as int;
+    int currentTime = DateTime.now().millisecondsSinceEpoch;
+    int elapsedTime = currentTime - lastOpened;
+    int fiveMinutes = 60 * 1000; // TODO: Currently 60 seconds
+
+    if (elapsedTime > fiveMinutes) {
+      resetState(currentTime);
+    } else {
+      await db.collection('state').doc('1').update({'lastOpened': currentTime});
+    }
   }
 }
