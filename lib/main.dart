@@ -13,9 +13,6 @@ import 'package:logger/logger.dart';
 var db = FirebaseFirestore.instance;
 var logger = Logger(printer: PrettyPrinter());
 
-// todo: make sure the 'lastOpened' variable gets updated every time the app is
-// initialized, regardless of whether the state gets reset or not
-
 void main() async {
   // app initialization
   WidgetsFlutterBinding.ensureInitialized();
@@ -67,16 +64,13 @@ class _MyAppState extends State<MyApp> {
             if (snapshot.hasData) {
               final data = snapshot.data!.data() as Map<String, dynamic>;
 
-              // shouldResetLastState(data['lastOpened'] as int);
-
               switch (data['screen']) {
                 case 'cart':
                   return const Cart();
                 case 'order form':
                   // convert values back to correct data types
-                  logger.d(data);
                   Map<String, dynamic> newPizzaValues =
-                      convertPizzaValues(data);
+                      convertPizzaValues(data['pizzaValues']);
 
                   return OrderForm(
                       selectedSize: newPizzaValues['size'] as PizzaSize,
@@ -113,9 +107,9 @@ class _MyAppState extends State<MyApp> {
       'lastOpened': currentTime,
       'screen': 'home',
       'pizzaValues': {
-        'crust': 'thin crust',
-        'sauce': 'red',
-        'size': 'small',
+        'crust': 'Thin Crust',
+        'sauce': 'Red',
+        'size': 'Small',
         'toppings': [],
       }
     };
@@ -123,33 +117,55 @@ class _MyAppState extends State<MyApp> {
   }
 
   Map<String, dynamic> convertPizzaValues(Map<String, dynamic> pizzaValues) {
-    PizzaSize size = pizzaValues['size'] == 'small'
-        ? PizzaSize.small
-        : pizzaValues['size'] == 'medium'
-            ? PizzaSize.medium
-            : PizzaSize.large;
+    PizzaSize size;
+  switch (pizzaValues['size']) {
+    case 'Small':
+      size = PizzaSize.small;
+      break;
+    case 'Medium':
+      size = PizzaSize.medium;
+      break;
+    case 'Large':
+      size = PizzaSize.large;
+      break;
+    default:
+      size = PizzaSize.small; // Default value
+  }
 
-    PizzaSauce sauce =
-        pizzaValues['sauce'] == 'red' ? PizzaSauce.red : PizzaSauce.white;
+  PizzaSauce sauce;
+  switch (pizzaValues['sauce']) {
+    case 'Red':
+      sauce = PizzaSauce.red;
+      break;
+    case 'White':
+      sauce = PizzaSauce.white;
+      break;
+    default:
+      sauce = PizzaSauce.red; // Default value
+  }
 
-    PizzaCrust crust = pizzaValues['crust'] == 'thin crust'
-        ? PizzaCrust.thinCrust
-        : PizzaCrust.regularCrust;
+  PizzaCrust crust;
+  switch (pizzaValues['crust']) {
+    case 'Thin Crust':
+      crust = PizzaCrust.thinCrust;
+      break;
+    case 'Regular Crust':
+      crust = PizzaCrust.regularCrust;
+      break;
+    default:
+      crust = PizzaCrust.thinCrust; // Default value
+  }
 
-    dynamic toppings = pizzaValues['toppings'];
-    if (toppings != null) {
-      toppings = List<String>.from(toppings);
-      toppings = (toppings..sort()).toList();
-    } else {
-      toppings = <String>[];
-    }
+  List<String> toppings = pizzaValues['toppings'] != null
+      ? List<String>.from(pizzaValues['toppings'])
+      : <String>[];
 
-    return {
-      'size': size,
-      'crust': crust,
-      'sauce': sauce,
-      'toppings': toppings,
-    };
+  return {
+    'size': size,
+    'crust': crust,
+    'sauce': sauce,
+    'toppings': toppings,
+  };
   }
 
   Future<void> initializeState() async {
@@ -157,8 +173,8 @@ class _MyAppState extends State<MyApp> {
     final lastOpened = snapshot.get('lastOpened') as int;
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     int elapsedTime = currentTime - lastOpened;
-    int fiveMinutes = 5 * 60 * 1000; 
-    
+    int fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+
     if (elapsedTime > fiveMinutes) {
       resetState(currentTime);
     } else {
