@@ -16,6 +16,7 @@ class NavDrawer extends StatelessWidget {
         children: [
           const SizedBox(height: 48),
           TextButton.icon(
+            key: const Key('homeButton'),
             onPressed: () {
               if (currentScreenName != '/home') {
                 Navigator.pop(context);
@@ -29,6 +30,7 @@ class NavDrawer extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           TextButton.icon(
+            key: const Key('orderButton'),
             onPressed: () {
               if (currentScreenName != '/order') {
                 Navigator.pop(context);
@@ -44,6 +46,7 @@ class NavDrawer extends StatelessWidget {
           // TODO: See if I can replace this with the shopping cart icon
           // that's currently on the home screen
           TextButton.icon(
+            key: const Key('cartButton'),
             onPressed: () {
               if (currentScreenName != '/cart') {
                 Navigator.pop(context);
