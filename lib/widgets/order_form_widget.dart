@@ -78,6 +78,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
         children: [
           // pizza size dropdown
           DropdownMenu<PizzaSize>(
+            key: const Key('pizzaSizeDropdown'),
             initialSelection: selectedSize,
             label: const Text('Pizza Size'),
             onSelected: (PizzaSize? size) {
@@ -105,6 +106,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
           const SizedBox(height: 48),
           // pizza sauce dropdown
           DropdownMenu<PizzaSauce>(
+            key: const Key('pizzaSauceDropdown'),
             initialSelection: selectedSauce,
             label: const Text('Pizza Sauce'),
             onSelected: (PizzaSauce? sauce) {
@@ -133,6 +135,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
           const SizedBox(height: 48),
           // pizza crust dropdown
           DropdownMenu<PizzaCrust>(
+            key: const Key('pizzaCrustDropdown'),
             initialSelection: selectedCrust,
             label: const Text('Pizza Crust'),
             onSelected: (PizzaCrust? crust) {
@@ -164,6 +167,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
           SizedBox(
             height: 300,
             child: ListView.builder(
+              key: const Key('toppingsList'),
               itemCount: toppings.length,
               itemBuilder: (context, index) {
                 return CheckboxListTile(
@@ -377,6 +381,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
               if (validPizzaUpdate) ...[
                 const Spacer(),
                 TextButton(
+                  key: const Key('cancelButton'),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
@@ -384,6 +389,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                 ),
                 const Spacer(),
                 TextButton(
+                    key: const Key('deleteButton'),
                     style: TextButton.styleFrom(
                       foregroundColor: Colors.red,
                     ),
