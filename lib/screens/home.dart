@@ -6,7 +6,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:logger/logger.dart';
 import 'package:pizza_chef/widgets/nav_drawer.dart';
 import 'package:pizza_chef/widgets/shopping_cart_badge.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 var logger = Logger(printer: PrettyPrinter());
 final db = FirebaseFirestore.instance;
