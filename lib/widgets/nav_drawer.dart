@@ -41,6 +41,8 @@ class NavDrawer extends StatelessWidget {
             icon: const Icon(Icons.list_alt),
           ),
           const SizedBox(height: 20),
+          // TODO: See if I can replace this with the shopping cart icon
+          // that's currently on the home screen
           TextButton.icon(
             onPressed: () {
               if (currentScreenName != '/cart') {
