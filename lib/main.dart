@@ -87,37 +87,38 @@ class _MyAppState extends State<MyApp> {
           }),
     );
   }
+}
 
-  Future<Map<String, dynamic>> loadState() async {
-    QuerySnapshot querySnapshot = await db.collection('state').get();
-    Map<String, dynamic> lastState = {};
+Future<Map<String, dynamic>> loadState() async {
+  QuerySnapshot querySnapshot = await db.collection('state').get();
+  Map<String, dynamic> lastState = {};
 
-    for (var doc in querySnapshot.docs) {
-      lastState['screen'] = doc.get('screen');
-      lastState['pizzaValues'] = doc.get('pizzaValues');
-      lastState['lastOpened'] = doc.get('lastOpened');
+  for (var doc in querySnapshot.docs) {
+    lastState['screen'] = doc.get('screen');
+    lastState['pizzaValues'] = doc.get('pizzaValues');
+    lastState['lastOpened'] = doc.get('lastOpened');
+  }
+
+  return lastState;
+}
+
+Future<void> resetState(int currentTime) async {
+  // current time
+  Map<String, dynamic> resetValues = {
+    'lastOpened': currentTime,
+    'screen': 'home',
+    'pizzaValues': {
+      'crust': 'Thin Crust',
+      'sauce': 'Red',
+      'size': 'Small',
+      'toppings': [],
     }
+  };
+  await db.collection('state').doc('1').update(resetValues);
+}
 
-    return lastState;
-  }
-
-  Future<void> resetState(int currentTime) async {
-    // current time
-    Map<String, dynamic> resetValues = {
-      'lastOpened': currentTime,
-      'screen': 'home',
-      'pizzaValues': {
-        'crust': 'Thin Crust',
-        'sauce': 'Red',
-        'size': 'Small',
-        'toppings': [],
-      }
-    };
-    await db.collection('state').doc('1').update(resetValues);
-  }
-
-  Map<String, dynamic> convertPizzaValues(Map<String, dynamic> pizzaValues) {
-    PizzaSize size;
+Map<String, dynamic> convertPizzaValues(Map<String, dynamic> pizzaValues) {
+  PizzaSize size;
   switch (pizzaValues['size']) {
     case 'Small':
       size = PizzaSize.small;
@@ -166,19 +167,18 @@ class _MyAppState extends State<MyApp> {
     'sauce': sauce,
     'toppings': toppings,
   };
-  }
+}
 
-  Future<void> initializeState() async {
-    DocumentSnapshot snapshot = await db.collection('state').doc('1').get();
-    final lastOpened = snapshot.get('lastOpened') as int;
-    int currentTime = DateTime.now().millisecondsSinceEpoch;
-    int elapsedTime = currentTime - lastOpened;
-    int fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
+Future<void> initializeState() async {
+  DocumentSnapshot snapshot = await db.collection('state').doc('1').get();
+  final lastOpened = snapshot.get('lastOpened') as int;
+  int currentTime = DateTime.now().millisecondsSinceEpoch;
+  int elapsedTime = currentTime - lastOpened;
+  int fiveMinutes = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-    if (elapsedTime > fiveMinutes) {
-      resetState(currentTime);
-    } else {
-      await db.collection('state').doc('1').update({'lastOpened': currentTime});
-    }
+  if (elapsedTime > fiveMinutes) {
+    resetState(currentTime);
+  } else {
+    await db.collection('state').doc('1').update({'lastOpened': currentTime});
   }
 }
