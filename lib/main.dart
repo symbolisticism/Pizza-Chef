@@ -13,7 +13,17 @@ import 'package:logger/logger.dart';
 var db = FirebaseFirestore.instance;
 var logger = Logger(printer: PrettyPrinter());
 
-void main() {
+// todo: make sure the 'lastOpened' variable gets updated every time the app is
+// initialized, regardless of whether the state gets reset or not
+
+void main() async {
+
+  // app initialization
+    WidgetsFlutterBinding.ensureInitialized();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+
   runApp(MaterialApp(
     routes: {
       '/home': (context) => const Home(),
@@ -33,38 +43,16 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late Future<Map<String, Object>> lastState;
-  bool initializationComplete = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // app initialization
-    WidgetsFlutterBinding.ensureInitialized();
-    initializeFirebase().then((_) {
-      lastState = loadState();
-      setState(() {
-        initializationComplete = true;
-      });
-    });
-  }
+  late Future<Map<String, dynamic>> lastState;
 
   @override
   Widget build(BuildContext context) {
-    if (!initializationComplete) {
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-    }
+    final dbStream = db.collection('state').doc('1').snapshots();
 
     return Scaffold(
-      body: FutureBuilder<Map<String, Object>>(
-          future: lastState,
+      body: StreamBuilder<DocumentSnapshot>(
+          stream: dbStream,
           builder: (context, snapshot) {
-            // error
             if (snapshot.hasError) {
               return Center(
                 child: Text('Error: ${snapshot.error}'),
@@ -72,41 +60,37 @@ class _MyAppState extends State<MyApp> {
             }
 
             if (snapshot.hasData) {
-              Map<String, Object>? data = snapshot.data;
+              final data = snapshot.data!.data() as Map<String, dynamic>;
 
-              if (data != null) {
-                shouldResetLastState(data['lastOpened'] as int);
+              shouldResetLastState(data['lastOpened'] as int);
 
-                switch (data['screen']) {
-                  case 'cart':
-                    return const Cart();
-                  case 'order form':
-                    // convert values back to correct data types
-                    logger.d(data);
-                    Map<String, Object> newPizzaValues =
-                        convertPizzaValues(data);
+              switch (data['screen']) {
+                case 'cart':
+                  return const Cart();
+                case 'order form':
+                  // convert values back to correct data types
+                  logger.d(data);
+                  Map<String, dynamic> newPizzaValues = convertPizzaValues(data);
 
-                    return OrderForm(
-                        selectedSize: newPizzaValues['size'] as PizzaSize,
-                        selectedSauce: newPizzaValues['sauce'] as PizzaSauce,
-                        selectedCrust: newPizzaValues['crust'] as PizzaCrust,
-                        selectedToppings:
-                            newPizzaValues['toppings'] as List<String>);
-                  default:
-                    return const Home();
-                }
-              } else {
-                return const Center(child: Text('Data is null.'));
+                  return OrderForm(
+                      selectedSize: newPizzaValues['size'] as PizzaSize,
+                      selectedSauce: newPizzaValues['sauce'] as PizzaSauce,
+                      selectedCrust: newPizzaValues['crust'] as PizzaCrust,
+                      selectedToppings:
+                          newPizzaValues['toppings'] as List<String>);
+                default:
+                  return const Home();
               }
             }
+
             return const Center(child: CircularProgressIndicator());
           }),
     );
   }
 
-  Future<Map<String, Object>> loadState() async {
+  Future<Map<String, dynamic>> loadState() async {
     QuerySnapshot querySnapshot = await db.collection('state').get();
-    Map<String, Object> lastState = {};
+    Map<String, dynamic> lastState = {};
 
     for (var doc in querySnapshot.docs) {
       lastState['screen'] = doc.get('screen');
@@ -125,7 +109,7 @@ class _MyAppState extends State<MyApp> {
 
   bool shouldResetLastState(int timestamp) {
     int currentTimestamp = DateTime.now().millisecondsSinceEpoch;
-    int fiveMinutes = 20 *
+    int fiveMinutes = 60 *
         1000; // TODO: change this back to five minutes after testing, currently 10 seconds
     int timeElapsed = currentTimestamp - timestamp;
 
@@ -140,10 +124,9 @@ class _MyAppState extends State<MyApp> {
   Future<void> resetState() async {
     // current time
     int currentTime = DateTime.now().millisecondsSinceEpoch;
-    Map<String, Object> resetValues = {
-      'lastOpened': currentTime,
+    Map<String, dynamic> resetValues = {
+      'lastOpened' : currentTime,
       'screen': 'home',
-      // TODO: determine if null is the best value to reset the values to
       'pizzaValues': {
         'crust': 'thin crust',
         'sauce': 'red',
@@ -151,11 +134,10 @@ class _MyAppState extends State<MyApp> {
         'toppings': [],
       }
     };
-    await db.collection('state').doc('1').set(resetValues);
+    await db.collection('state').doc('1').update(resetValues);
   }
 
-  Map<String, Object> convertPizzaValues(Map<String, Object> pizzaValues) {
-    // TODO: I believe the NULL error is coming from in here
+  Map<String, dynamic> convertPizzaValues(Map<String, dynamic> pizzaValues) {
     PizzaSize size = pizzaValues['size'] == 'small'
         ? PizzaSize.small
         : pizzaValues['size'] == 'medium'
