@@ -126,6 +126,7 @@ class _CartState extends State<Cart> {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: ListView.builder(
+        key: const Key('cartPizzasList'),
         itemCount: pizzas.length,
         itemBuilder: (context, index) {
           List<Pizza> values = pizzas.values.toList();
