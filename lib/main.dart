@@ -157,8 +157,8 @@ class _MyAppState extends State<MyApp> {
     final lastOpened = snapshot.get('lastOpened') as int;
     int currentTime = DateTime.now().millisecondsSinceEpoch;
     int elapsedTime = currentTime - lastOpened;
-    int fiveMinutes = 60 * 1000; // TODO: Currently 60 seconds
-
+    int fiveMinutes = 5 * 60 * 1000; 
+    
     if (elapsedTime > fiveMinutes) {
       resetState(currentTime);
     } else {
