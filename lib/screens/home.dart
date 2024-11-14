@@ -46,24 +46,6 @@ class _HomeState extends State<Home> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Pizza Chef'),
-        actions: [
-          StreamBuilder<QuerySnapshot>(
-            stream: firebaseStream,
-            builder: (context, snapshot) {
-              int itemCount = 0;
-              if (snapshot.hasData) {
-                itemCount = snapshot.data!.docs.length;
-              }
-
-              return IconButton(
-                onPressed: () {
-                  navigateToCart(context);
-                },
-                icon: ShoppingCartWithBadge(itemCount: itemCount),
-              );
-            },
-          ),
-        ],
       ),
       drawer: const NavDrawer('/home'),
       body: Padding(
