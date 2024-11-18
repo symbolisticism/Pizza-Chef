@@ -27,7 +27,7 @@ void main() async {
       '/order': (context) => OrderForm.defaultOrder(),
     },
     debugShowCheckedModeBanner: false,
-    home: const MyApp(),
+    home: MyApp(db),
   ));
 }
 
