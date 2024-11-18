@@ -32,7 +32,10 @@ void main() async {
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  final FirebaseFirestore? firestore;
+
+  MyApp(FirebaseFirestore? firestore, {super.key})
+      : firestore = firestore ?? db; // for testing purposes, accept a mock firestore instance
 
   @override
   State<MyApp> createState() => _MyAppState();
