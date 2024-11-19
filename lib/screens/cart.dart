@@ -90,10 +90,10 @@ class _CartState extends State<Cart> {
 
     for (var doc in querySnapshot.docs) {
       final pizzaId = doc.id;
-      dynamic pizzaSize = doc.get('pizzaSize') as String;
+      dynamic pizzaSize = doc.get('size') as String;
       final toppingsDynamic = doc.get('toppings') as List<dynamic>;
       dynamic sauce = doc.get('sauce') as String;
-      dynamic crust = doc.get('thinCrust') as String;
+      dynamic crust = doc.get('crust') as String;
       dynamic timestamp = doc.get('timestamp') as Timestamp;
 
       List<String> toppings = List<String>.from(toppingsDynamic);
