@@ -94,7 +94,7 @@ class _NavDrawerState extends State<NavDrawer> {
 void navigateToCart(context) {
   Navigator.of(context).push(
     MaterialPageRoute(
-      builder: (context) => const Cart(),
+      builder: (context) => Cart(),
     ),
   );
 }
