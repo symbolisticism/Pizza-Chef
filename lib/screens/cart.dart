@@ -140,8 +140,6 @@ class _CartState extends State<Cart> {
           String key = keys[index];
           Pizza value = values[index];
 
-          logger.d(value.toString());
-
           return ListTile(
             title: Text(value.toString()),
             leading: const Icon(Icons.done, color: Colors.green),
