@@ -5,7 +5,6 @@ import 'package:pizza_chef/screens/cart.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:logger/logger.dart';
 import 'package:pizza_chef/widgets/nav_drawer.dart';
-import 'package:pizza_chef/widgets/shopping_cart_badge.dart';
 
 var logger = Logger(printer: PrettyPrinter());
 final db = FirebaseFirestore.instance;
@@ -32,9 +31,6 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-    final firebaseStream =
-        FirebaseFirestore.instance.collection('cart').snapshots();
-
     if (!stateIsUpdated) {
       return const Scaffold(
         body: Center(
@@ -99,7 +95,7 @@ class _HomeState extends State<Home> {
   void navigateToCart(context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => const Cart(),
+        builder: (context) => Cart(),
       ),
     );
   }
