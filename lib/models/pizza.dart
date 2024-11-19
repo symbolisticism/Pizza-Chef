@@ -42,14 +42,14 @@ class Pizza {
 
   static Pizza fromMap(Map<String, dynamic> map) {
     return Pizza(
-      pizzaSize: map['pizzaSize'] == 'Small'
+      pizzaSize: map['size'] == 'Small'
           ? PizzaSize.small
-          : map['pizzaSize'] == 'Medium'
+          : map['size'] == 'Medium'
               ? PizzaSize.medium
               : PizzaSize.large,
       toppings: List<String>.from(map['toppings']),
       sauce: map['sauce'] == 'Red' ? PizzaSauce.red : PizzaSauce.white,
-      crustType: map['thinCrust'] == 'Thin Crust'
+      crustType: map['crust'] == 'Thin Crust'
           ? PizzaCrust.thinCrust
           : PizzaCrust.regularCrust,
       timestamp: map['timestamp'],
