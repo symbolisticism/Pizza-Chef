@@ -28,7 +28,7 @@ class Pizza {
   final PizzaSauce sauce;
   final PizzaCrust crustType;
   final String id;
-  final DateTime timestamp;
+  final int timestamp;
 
   Map<String, dynamic> toMap() {
     return {
@@ -41,7 +41,7 @@ class Pizza {
   }
 
   static Pizza fromMap(Map<String, dynamic> map) {
-    return Pizza.withId(
+    return Pizza(
       pizzaSize: map['pizzaSize'] == 'Small'
           ? PizzaSize.small
           : map['pizzaSize'] == 'Medium'
@@ -53,7 +53,6 @@ class Pizza {
           ? PizzaCrust.thinCrust
           : PizzaCrust.regularCrust,
       timestamp: map['timestamp'],
-      id: map['id'],
     );
   }
 
