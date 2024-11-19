@@ -8,11 +8,15 @@ import 'package:pizza_chef/models/pizza.dart';
 import 'package:pizza_chef/widgets/nav_drawer.dart';
 import 'package:pizza_chef/widgets/order_form_widget.dart';
 
-final db = FirebaseFirestore.instance;
+// final db = FirebaseFirestore.instance;
 var logger = Logger(printer: PrettyPrinter());
 
 class Cart extends StatefulWidget {
-  const Cart({super.key});
+  final FirebaseFirestore? firestore;
+
+  Cart([FirebaseFirestore? firestore, Key? key])
+      : firestore = firestore ?? FirebaseFirestore.instance,
+        super(key: key);
 
   @override
   State<Cart> createState() => _CartState();
@@ -23,10 +27,12 @@ class _CartState extends State<Cart> {
   Map<String, Pizza> pizzas = {};
   late Future<void> pizzasFuture;
   bool stateIsUpdated = false;
+  late FirebaseFirestore db;
 
   @override
   void initState() {
     super.initState();
+    db = widget.firestore!;
     pizzasFuture = loadPizzas();
     updateState().then((_) {
       setState(() {
