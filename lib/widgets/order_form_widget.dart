@@ -282,9 +282,9 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
 
                   // check if an identical pizza already exists in the database
                   for (var doc in snapshot.docs) {
-                    final recordPizzaSize = doc.get('pizzaSize') as String;
+                    final recordPizzaSize = doc.get('size') as String;
                     final recordSauce = doc.get('sauce') as String;
-                    final recordCrust = doc.get('thinCrust') as String;
+                    final recordCrust = doc.get('crust') as String;
 
                     // list manipulation for comparison
                     dynamic recordToppings =
