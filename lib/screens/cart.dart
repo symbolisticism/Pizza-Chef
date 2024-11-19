@@ -94,7 +94,7 @@ class _CartState extends State<Cart> {
       final toppingsDynamic = doc.get('toppings') as List<dynamic>;
       dynamic sauce = doc.get('sauce') as String;
       dynamic crust = doc.get('crust') as String;
-      dynamic timestamp = doc.get('timestamp') as Timestamp;
+      dynamic timestamp = doc.get('timestamp') as int;
 
       List<String> toppings = List<String>.from(toppingsDynamic);
 
@@ -109,7 +109,6 @@ class _CartState extends State<Cart> {
       crust = crust == 'Thin Crust'
           ? PizzaCrust.thinCrust
           : PizzaCrust.regularCrust;
-      timestamp = timestamp.toDate();
 
       // add pizzas from database into the local pizzas map
       if (!pizzas.containsKey(pizzaId)) {
@@ -140,6 +139,8 @@ class _CartState extends State<Cart> {
 
           String key = keys[index];
           Pizza value = values[index];
+
+          logger.d(value.toString());
 
           return ListTile(
             title: Text(value.toString()),
