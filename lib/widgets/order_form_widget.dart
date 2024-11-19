@@ -220,7 +220,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
               ElevatedButton(
                 onPressed: () async {
                   // get the current time
-                  final now = DateTime.now();
+                  final now = DateTime.now().millisecondsSinceEpoch;
 
                   // sort the list to make it easier to compare later
                   if (validPizzaUpdate) {
