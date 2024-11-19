@@ -82,7 +82,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             initialSelection: selectedSize,
             label: const Text('Pizza Size'),
             onSelected: (PizzaSize? size) {
-              setState(() async {
+              setState(() async { // TODO: This needs to be fixed
                 if (validPizzaUpdate) {
                   tempPizzaSize = size;
                 } else {
@@ -359,6 +359,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                     logger.e(e);
                   }
 
+                  // TODO: This is not navigating and showing the snackbar correctly
                   if (context.mounted) {
                     if (validPizzaUpdate) {
                       Navigator.of(context).pop(true);
