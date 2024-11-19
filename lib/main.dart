@@ -23,19 +23,21 @@ void main() async {
   runApp(MaterialApp(
     routes: {
       '/home': (context) => const Home(),
-      '/cart': (context) => const Cart(),
+      '/cart': (context) => Cart(), 
       '/order': (context) => OrderForm.defaultOrder(),
     },
     debugShowCheckedModeBanner: false,
-    home: MyApp(db),
+    home: MyApp(db), // if this is parameter optional, why does it give mandatory parameter error?
+    // TODO: ensure this is correct ^^
   ));
 }
 
 class MyApp extends StatefulWidget {
   final FirebaseFirestore? firestore;
 
-  MyApp(FirebaseFirestore? firestore, {super.key})
-      : firestore = firestore ?? db; // for testing purposes, accept a mock firestore instance
+  MyApp([FirebaseFirestore? firestore, Key? key])
+      : firestore = firestore ?? FirebaseFirestore.instance, // for testing purposes, accept a mock firestore instance
+      super(key: key); 
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -43,10 +45,12 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   late Future<Map<String, dynamic>> lastState;
+  late FirebaseFirestore db;
 
   @override
   void initState() {
     super.initState();
+    db = widget.firestore!;
     initializeState();
   }
 
@@ -69,7 +73,7 @@ class _MyAppState extends State<MyApp> {
 
               switch (data['screen']) {
                 case 'cart':
-                  return const Cart();
+                  return Cart();
                 case 'order form':
                   // convert values back to correct data types
                   Map<String, dynamic> newPizzaValues =
