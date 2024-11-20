@@ -60,8 +60,6 @@ class _NavDrawerState extends State<NavDrawer> {
             icon: const Icon(Icons.list_alt),
           ),
           const SizedBox(height: 20),
-          // TODO: See if I can replace this with the shopping cart icon
-          // that's currently on the home screen
           StreamBuilder<QuerySnapshot>(
             stream: dbStream,
             builder: (context, snapshot) {
