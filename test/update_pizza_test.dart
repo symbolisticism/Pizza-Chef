@@ -49,7 +49,7 @@ void main() async {
     await firebase.collection('state').doc('1').set(state);
   testWidgets('Update Pizza', (WidgetTester tester) async {
 
-    // find the pizza in the UI
+    // start the app
     await tester.pumpWidget(MaterialApp(
       home: Cart(firestore: firebase),
     ));
