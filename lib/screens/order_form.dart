@@ -8,28 +8,30 @@ import 'package:pizza_chef/widgets/nav_drawer.dart';
 import 'package:pizza_chef/widgets/order_form_widget.dart';
 
 var logger = Logger(printer: PrettyPrinter());
-final db = FirebaseFirestore.instance;
 
 class OrderForm extends StatefulWidget {
-  OrderForm.defaultOrder({super.key})
+  OrderForm.defaultOrder({FirebaseFirestore? firestore, super.key})
       : selectedSize = PizzaSize.small,
         selectedSauce = PizzaSauce.red,
         selectedCrust = PizzaCrust.thinCrust,
-        selectedToppings = [];
+        selectedToppings = [],
+        firestore = firestore ?? FirebaseFirestore.instance;
 
   // constructor that will take parameters
-  const OrderForm({
+  OrderForm({
     required this.selectedSize,
+    FirebaseFirestore? firestore,
     required this.selectedSauce,
     required this.selectedCrust,
     required this.selectedToppings,
     super.key,
-  });
+  }) : firestore = firestore ?? FirebaseFirestore.instance;
 
   final PizzaSize selectedSize;
   final PizzaSauce selectedSauce;
   final PizzaCrust selectedCrust;
   final List<String> selectedToppings;
+  final FirebaseFirestore firestore;
 
   @override
   State<OrderForm> createState() => _OrderFormState();
@@ -49,7 +51,7 @@ class _OrderFormState extends State<OrderForm> {
     selectedSauce = widget.selectedSauce;
     selectedCrust = widget.selectedCrust;
     selectedToppings = widget.selectedToppings;
-    updateState().then((_) {
+    updateState(widget.firestore).then((_) {
       setState(() {
         stateIsUpdated = true;
       });
@@ -58,6 +60,9 @@ class _OrderFormState extends State<OrderForm> {
 
   @override
   Widget build(BuildContext context) {
+    // instsantiate the firestore
+    FirebaseFirestore db = widget.firestore;
+
     if (!stateIsUpdated) {
       return const Scaffold(
         body: Center(
@@ -82,6 +87,7 @@ class _OrderFormState extends State<OrderForm> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: OrderFormWidget(
+              firestore: db,
               selectedSize: selectedSize,
               selectedSauce: selectedSauce,
               selectedCrust: selectedCrust,
@@ -93,7 +99,7 @@ class _OrderFormState extends State<OrderForm> {
     );
   }
 
-  Future<void> updateState() async {
+  Future<void> updateState(FirebaseFirestore db) async {
     await db.collection('state').doc('1').update({'screen': 'order form'});
   }
 }
