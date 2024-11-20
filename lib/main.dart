@@ -27,8 +27,7 @@ void main() async {
       '/order': (context) => OrderForm.defaultOrder(),
     },
     debugShowCheckedModeBanner: false,
-    home: MyApp(db), // if this is parameter optional, why does it give mandatory parameter error?
-    // TODO: ensure this is correct ^^
+    home: MyApp(db), 
   ));
 }
 
