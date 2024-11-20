@@ -397,14 +397,15 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                 ),
                 const Spacer(),
                 TextButton(
-                    key: const Key('deleteButton'),
-                    style: TextButton.styleFrom(
-                      foregroundColor: Colors.red,
-                    ),
-                    onPressed: () {
-                      showDeletePizzaDialog(context, db);
-                    },
-                    child: const Text('Delete Pizza')),
+                  key: const Key('Delete Button'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.red,
+                  ),
+                  onPressed: () {
+                    showDeletePizzaDialog(context, db);
+                  },
+                  child: const Text('Delete Pizza'),
+                ),
               ]
             ],
           ),
@@ -451,6 +452,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
               'Are you sure you want to delete this pizza? This action cannot be undone.'),
           actions: [
             ElevatedButton(
+              key: const Key('Dialog Box Delete Button'),
               onPressed: () async {
                 await db.collection('cart').doc(pizzaId).delete();
                 if (!context.mounted) {
