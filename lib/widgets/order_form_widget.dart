@@ -72,10 +72,14 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // get the firestore instance
     FirebaseFirestore db = widget.firestore;
-
     bool validPizzaUpdate = (pizzaUpdate != null && pizzaUpdate!);
+
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,20 +89,21 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             key: const Key('pizzaSizeDropdown'),
             initialSelection: selectedSize,
             label: const Text('Pizza Size'),
-            onSelected: (PizzaSize? size) {
-              setState(() async {
-                // TODO: This needs to be fixed
+            onSelected: (PizzaSize? size) async {
+              setState(() {
                 if (validPizzaUpdate) {
                   tempPizzaSize = size;
                 } else {
                   selectedSize = size!;
                   // update state
-                  await db
-                      .collection('state')
-                      .doc('1')
-                      .update({'pizzaValues.size': size.label});
                 }
               });
+
+              // update the database
+              await db
+                  .collection('state')
+                  .doc('1')
+                  .update({'pizzaValues.size': size!.label});
             },
             dropdownMenuEntries: PizzaSize.values
                 .map<DropdownMenuEntry<PizzaSize>>((PizzaSize size) {
@@ -114,20 +119,20 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             key: const Key('pizzaSauceDropdown'),
             initialSelection: selectedSauce,
             label: const Text('Pizza Sauce'),
-            onSelected: (PizzaSauce? sauce) {
-              setState(() async {
+            onSelected: (PizzaSauce? sauce) async {
+              setState(() {
                 if (validPizzaUpdate) {
                   tempPizzaSauce = sauce!;
                 } else {
                   selectedSauce = sauce!;
-
-                  // update state
-                  await db
-                      .collection('state')
-                      .doc('1')
-                      .update({'pizzaValues.sauce': sauce.label});
                 }
               });
+
+              // update state
+              await db
+                  .collection('state')
+                  .doc('1')
+                  .update({'pizzaValues.sauce': sauce!.label});
             },
             dropdownMenuEntries: PizzaSauce.values
                 .map<DropdownMenuEntry<PizzaSauce>>((PizzaSauce sauce) {
@@ -143,20 +148,20 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             key: const Key('pizzaCrustDropdown'),
             initialSelection: selectedCrust,
             label: const Text('Pizza Crust'),
-            onSelected: (PizzaCrust? crust) {
-              setState(() async {
+            onSelected: (PizzaCrust? crust) async {
+              setState(() {
                 if (validPizzaUpdate) {
                   tempPizzaCrust = crust!;
                 } else {
                   selectedCrust = crust!;
-
-                  // update state
-                  await db
-                      .collection('state')
-                      .doc('1')
-                      .update({'pizzaValues.crust': crust.label});
                 }
               });
+
+              // update state
+              await db
+                  .collection('state')
+                  .doc('1')
+                  .update({'pizzaValues.crust': crust!.label});
             },
             dropdownMenuEntries: PizzaCrust.values
                 .map<DropdownMenuEntry<PizzaCrust>>((PizzaCrust crust) {
@@ -182,7 +187,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                   value: validPizzaUpdate
                       ? tempSelectedToppings!.contains(toppings[index])
                       : selectedToppings.contains(toppings[index]),
-                  onChanged: (bool? value) {
+                  onChanged: (bool? value) async {
                     // do not do async stuff in setState
                     setState(() {
                       if (value == true) {
@@ -203,14 +208,14 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                     // Perform the database operations outside of setState
                     if (value == true) {
                       if (!validPizzaUpdate) {
-                        db.collection('state').doc('1').update({
+                        await db.collection('state').doc('1').update({
                           'pizzaValues.toppings':
                               FieldValue.arrayUnion([toppings[index]])
                         });
                       }
                     } else {
                       if (!validPizzaUpdate) {
-                        db.collection('state').doc('1').update({
+                        await db.collection('state').doc('1').update({
                           'pizzaValues.toppings':
                               FieldValue.arrayRemove([toppings[index]])
                         });
@@ -226,6 +231,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
               ElevatedButton(
                 key: const Key('Submit Button'),
                 onPressed: () async {
+                  
                   // get the current time
                   final now = DateTime.now().millisecondsSinceEpoch;
 
