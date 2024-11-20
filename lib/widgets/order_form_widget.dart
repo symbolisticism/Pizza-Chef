@@ -8,11 +8,11 @@ import 'package:pizza_chef/models/pizza.dart';
 import 'package:logger/logger.dart';
 
 var logger = Logger(printer: PrettyPrinter());
-var db = FirebaseFirestore.instance;
 
 class OrderFormWidget extends StatefulWidget {
   const OrderFormWidget({
     required this.selectedSize,
+    required this.firestore,
     required this.selectedSauce,
     required this.selectedCrust,
     required this.selectedToppings,
@@ -21,6 +21,7 @@ class OrderFormWidget extends StatefulWidget {
     super.key,
   });
 
+  final FirebaseFirestore firestore;
   final PizzaSize selectedSize;
   final PizzaSauce selectedSauce;
   final PizzaCrust selectedCrust;
@@ -71,6 +72,9 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // get the firestore instance
+    FirebaseFirestore db = widget.firestore;
+
     bool validPizzaUpdate = (pizzaUpdate != null && pizzaUpdate!);
     return SingleChildScrollView(
       child: Column(
@@ -82,7 +86,8 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
             initialSelection: selectedSize,
             label: const Text('Pizza Size'),
             onSelected: (PizzaSize? size) {
-              setState(() async { // TODO: This needs to be fixed
+              setState(() async {
+                // TODO: This needs to be fixed
                 if (validPizzaUpdate) {
                   tempPizzaSize = size;
                 } else {
@@ -171,6 +176,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
               itemCount: toppings.length,
               itemBuilder: (context, index) {
                 return CheckboxListTile(
+                  key: Key(toppings[index]),
                   tristate: false,
                   title: Text(toppings[index]),
                   value: validPizzaUpdate
@@ -218,6 +224,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
           Row(
             children: [
               ElevatedButton(
+                key: const Key('Submit Button'),
                 onPressed: () async {
                   // get the current time
                   final now = DateTime.now().millisecondsSinceEpoch;
@@ -395,7 +402,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                       foregroundColor: Colors.red,
                     ),
                     onPressed: () {
-                      showDeletePizzaDialog(context);
+                      showDeletePizzaDialog(context, db);
                     },
                     child: const Text('Delete Pizza')),
               ]
@@ -434,7 +441,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
         });
   }
 
-  void showDeletePizzaDialog(BuildContext context) {
+  void showDeletePizzaDialog(BuildContext context, FirebaseFirestore db) {
     showDialog<void>(
       context: context,
       builder: (context) {
