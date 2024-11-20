@@ -36,11 +36,11 @@ void main() async {
 
     // read the pizza from the UI
     await tester.pumpWidget(MaterialApp(
-      home: Cart(firebase),
+      home: Cart(firestore: firebase),
     ));
 
     // Let the snapshots stream fire a snapshot
-    await tester.pumpAndSettle();
+    await tester.pumpAndSettle(); // MONEY SHOT
     await tester.idle(); // MONEY SHOT
 
     // check if the pizza is displayed
