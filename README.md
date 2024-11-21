@@ -51,3 +51,33 @@ If you are downloading the app onto a mobile device, the simplest way to do this
 ## 2. On the web
 To access the web version of the Pizza Chef app, open [this link](https://pizza-chef-873cf.web.app).
 
+# Running Tests Locally
+*Note: All instructions for running tests are written with the assumption that the user is using a Windows computer running Windows 11.*
+
+1. To run the automated test script locally, download the GitHub repository to your computer. You can do this by clicking the 'Code' button near the top right of the screen.
+<img src="assets/running_tests/code_button.png"/>
+
+2. Then, click 'Download Zip' from the menu that appears.
+<img src="assets/running_tests/download_zip_button.png"/>
+If prompted, choose a place to save the zip folder and a name for it. I have chosen to save mine to my Downloads folder and leave the default name. 
+*Note: If you are not prompted to choose a place where it should be downloaded, check your Downloads folder.*
+<img src="assets/running_tests/save_zip_to_downloads.png"/>
+
+3. Next, open your File Explorer and locate your newly downloaded zip folder. Click on it once, then right click on it and select 'Extract All' from the menu that appears.
+<img src="assets\running_tests\right_click_on_folder.png"/>
+The file structure of the extracted folder will be:  `Project Name > Project Name > Project Files`. 
+You need to navigate down to the second `Project Name` level, but still one directory above the `Project Files`. You can navigate one directory deeper by double clicking on a folder. If you've navigated to the correct directory, you will see the name of the project in the search bar above and only one folder in your current directory with the same name as above.
+<img src="assets\running_tests\right_click_copy_as_path.png"/>
+
+4. When you're in the right directory, click on the folder once, then right click it. In the menu that appears, click 'Copy as Path'.
+
+5. Next, open your terminal application by pressing and holding the Windows key and then pressing the 'R' key.
+In the dialog box that appears, ensure that 'cmd' is entered into the text box labeled 'Open', and then click 'OK'.
+<img src="assets\running_tests\cmd_box.png"/>
+
+6. Your terminal application will open. Using that path you copied from step 4, enter `cd <copied path>` and then press 'Enter'. Then type `flutter test` and press 'Enter'
+<img src="assets\running_tests\paste_path_and_run_test.png"/>
+
+7. You will see the project download all the necessary dependencies needed for the app, and then you will see the tests run. Once the tests have completed, you will see a message that reads, "All tests passed!"
+<img src="assets\running_tests\running_tests1.png"/>
+<img src="assets\running_tests\all_tests_passed.png"/>
