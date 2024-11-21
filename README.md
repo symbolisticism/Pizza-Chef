@@ -54,6 +54,8 @@ To access the web version of the Pizza Chef app, open [this link](https://pizza-
 # Running Tests Locally
 *Note: All instructions for running tests are written with the assumption that the user is using a Windows computer running Windows 11.*
 
+To run these tests, we will be using Flutter's built-in test suite, which we will be accessing through the command line.
+
 1. To run the automated test script locally, download the GitHub repository to your computer. You can do this by clicking the 'Code' button near the top right of the screen.
 <img src="assets/running_tests/code_button.png"/>
 
@@ -81,3 +83,30 @@ In the dialog box that appears, ensure that 'cmd' is entered into the text box l
 7. You will see the project download all the necessary dependencies needed for the app, and then you will see the tests run. Once the tests have completed, you will see a message that reads, "All tests passed!"
 <img src="assets\running_tests\running_tests1.png"/>
 <img src="assets\running_tests\all_tests_passed.png"/>
+
+# Overview of the Application
+This app makes use of the Flutter framework, which is a modular tool that helps developers create beautiful and interactive apps for phones, tablets, and computers that work on virtually all platforms. For state management and data persistence, Google Firebase provides a simple interface for writing and reading from a NoSQL database.
+
+The app is capable of creating pizza orders. In the tech world, an app like this one is often referred to as a CRUD application because it revolves around the ability to **C**reate, **R**ead, **U**pdate, and **D**elete information. In the app, users can do all those things with individual pizzas to create their ideal pizza order.
+
+# My Thought Process Behind Technical Choices
+## Environment and Tools
+For my environment, I used VS Code because of its abundant extensions and coding helps that accelerate the development process. I built the app using the Flutter framework because it is the one I'm most familiar with, which allowed me to conceptualize and build the app fairly quickly. Firebase was a natural choice after deciding to use Flutter because they were designed to interact with each other, since they are both Google products. That means that integrating and getting started with using Firebase is a quick and simple process.
+
+## Navigation
+For the app's navigation, I started out using the traditional method of pushing screens onto the stack and popping them off to return. I quickly realized that that would complicate loading a saved state when the app was closed and re-opened, so I refactored my navigation to always push a replacement screen onto the stack. I also added a navigation drawer on the left side of the application to decentralize the navigation. 
+
+## Saving State
+I decided to save the following state variables:
+1. Last used screen
+2. Values last entered for pizza creation
+3. Time since last app startup
+
+My reasoning for saving the last used screen was to return the user to that screen if they closed the app and reopened it within a relatively short timeframe. 
+
+The last-entered values for the pizza creation ensure that if the app closes or is closed during pizza creation, the user can pick up where they left off if they reopen the app within a relatively short time frame. This state is only loaded when the app is closed and reopens to the order form page because it is assumed that a user will not purposefully navigate away from the order form until they have finished their order.
+
+Knowing the time since the app last started assists in knowing whether to refresh the state. It is not easy in code to tell the difference between when an app is closed or refreshed. The developer has to make certain assumptions and build the app around them. I worked around this problem by always logging the time when the app starts up. If the app starts up and notices that more than 5 minutes have passed since the app was last opened, it is assumed that the user purposefully closed the app the last time, and so the state is refreshed. 
+
+## Running Tests
+Because Flutter offers a built-in framework for testing the application, I used that to minimize costs in time to integrate a different test suite.
