@@ -60,8 +60,6 @@ class _HomeState extends State<Home> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // TODO: Ordering a pizza after navigating from this button works
-                // todo: but when you navigate from the navdrawer, it doesn't work
                 ElevatedButton(
                   onPressed: () async {
                     if (await doesntHaveInternetConnection()) {

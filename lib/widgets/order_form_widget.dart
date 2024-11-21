@@ -248,10 +248,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                       'toppings': (selectedToppings..sort()).toList(),
                     };
                   }
-
-                  // TODO: future work -> separate logic between update and creation from the top of the widget
-                  // todo: rather than using the validPizzaUpdate variable to check if the pizza is being updated
-                  // todo: and doing everything twice
                   // 1. check if the cart is full
                   if (!validPizzaUpdate) {
                     if (await cartIsFull(db)) {
@@ -270,7 +266,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                     if (context.mounted) {
                       if (validPizzaUpdate) {
                         showIdenticalPizzaDialog(
-                            context); // TODO: this is showing even when valid changes have been made
+                            context); 
                       } else {
                         showSnackBar(context,
                             'An identical pizza is already in your cart. Please make this one unique before proceeding.');
@@ -321,12 +317,11 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                     }
                   }
 
-                  // TODO: This is not navigating and showing the snackbar correctly
                   if (context.mounted) {
                     if (validPizzaUpdate) {
                       // true means the pizza was updated
                       Navigator.pop(
-                          context, true); // TODO: I'm not done with this
+                          context, true);
                     } else {
                       // false means the pizza was added
                       Navigator.pushReplacementNamed(context, '/home');
