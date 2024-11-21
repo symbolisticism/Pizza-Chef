@@ -60,6 +60,8 @@ class _HomeState extends State<Home> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // TODO: Ordering a pizza after navigating from this button works
+                // todo: but when you navigate from the navdrawer, it doesn't work
                 ElevatedButton(
                   onPressed: () async {
                     if (await doesntHaveInternetConnection()) {
@@ -92,14 +94,6 @@ class _HomeState extends State<Home> {
     );
   }
 
-  void navigateToCart(context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => Cart(),
-      ),
-    );
-  }
-
   Future<bool> doesntHaveInternetConnection() async {
     // check if the device is connected to the internet first
     final List<ConnectivityResult> connectivityResult =
@@ -118,10 +112,9 @@ class _HomeState extends State<Home> {
   }
 
   void navigateToDefaultOrderForm(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => OrderForm.defaultOrder(),
-      ),
+    Navigator.pushReplacementNamed(
+      context,
+      '/order',  
     );
   }
 
