@@ -4,10 +4,11 @@ import 'package:pizza_chef/data/pizza_crust.dart';
 import 'package:pizza_chef/data/pizza_sauce.dart';
 import 'package:pizza_chef/data/pizza_size.dart';
 import 'package:pizza_chef/data/toppings.dart';
-import 'package:pizza_chef/models/pizza.dart';
 import 'package:logger/logger.dart';
+import 'package:uuid/uuid.dart';
 
 var logger = Logger(printer: PrettyPrinter());
+var uuid = const Uuid();
 
 class OrderFormWidget extends StatefulWidget {
   const OrderFormWidget({
@@ -79,7 +80,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
       return const Center(child: CircularProgressIndicator());
     }
 
-
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -87,7 +87,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
           // pizza size dropdown
           DropdownMenu<PizzaSize>(
             key: const Key('pizzaSizeDropdown'),
-            initialSelection: selectedSize,
+            initialSelection: validPizzaUpdate ? tempPizzaSize : selectedSize,
             label: const Text('Pizza Size'),
             onSelected: (PizzaSize? size) async {
               setState(() {
@@ -117,7 +117,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
           // pizza sauce dropdown
           DropdownMenu<PizzaSauce>(
             key: const Key('pizzaSauceDropdown'),
-            initialSelection: selectedSauce,
+            initialSelection: validPizzaUpdate ? tempPizzaSauce : selectedSauce,
             label: const Text('Pizza Sauce'),
             onSelected: (PizzaSauce? sauce) async {
               setState(() {
@@ -146,7 +146,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
           // pizza crust dropdown
           DropdownMenu<PizzaCrust>(
             key: const Key('pizzaCrustDropdown'),
-            initialSelection: selectedCrust,
+            initialSelection: validPizzaUpdate ? tempPizzaCrust : selectedCrust,
             label: const Text('Pizza Crust'),
             onSelected: (PizzaCrust? crust) async {
               setState(() {
@@ -188,7 +188,6 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
                       ? tempSelectedToppings!.contains(toppings[index])
                       : selectedToppings.contains(toppings[index]),
                   onChanged: (bool? value) async {
-                    // do not do async stuff in setState
                     setState(() {
                       if (value == true) {
                         if (validPizzaUpdate) {
@@ -207,6 +206,7 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
 
                     // Perform the database operations outside of setState
                     if (value == true) {
+                      // don't update the state for pizza creation
                       if (!validPizzaUpdate) {
                         await db.collection('state').doc('1').update({
                           'pizzaValues.toppings':
@@ -231,153 +231,105 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
               ElevatedButton(
                 key: const Key('Submit Button'),
                 onPressed: () async {
-                  
-                  // get the current time
-                  final now = DateTime.now().millisecondsSinceEpoch;
-
-                  // sort the list to make it easier to compare later
+                  // pizza map for comparison
+                  final Map<String, dynamic> pizzaMap;
                   if (validPizzaUpdate) {
-                    selectedToppings = (tempSelectedToppings!..sort()).toList();
+                    pizzaMap = {
+                      'size': tempPizzaSize!.label,
+                      'sauce': tempPizzaSauce!.label,
+                      'crust': tempPizzaCrust!.label,
+                      'toppings': (tempSelectedToppings!..sort()).toList()
+                    };
                   } else {
-                    selectedToppings = (selectedToppings..sort()).toList();
+                    pizzaMap = {
+                      'size': selectedSize.label,
+                      'sauce': selectedSauce.label,
+                      'crust': selectedCrust.label,
+                      'toppings': (selectedToppings..sort()).toList(),
+                    };
                   }
 
-                  // only instantiate if a pizza is being created
-                  Pizza pizza;
-                  int numberOfPizzas;
-
-                  // these are needed for both update and creation, since we
-                  // have to check for an identical pizza in the database
-                  CollectionReference cart = db.collection('cart');
-                  QuerySnapshot snapshot = await cart.get();
-
-                  bool validPizzaId = pizzaId != null && pizzaId!.isNotEmpty;
-
-                  // create the pizza object
+                  // TODO: future work -> separate logic between update and creation from the top of the widget
+                  // todo: rather than using the validPizzaUpdate variable to check if the pizza is being updated
+                  // todo: and doing everything twice
+                  // 1. check if the cart is full
                   if (!validPizzaUpdate) {
-                    pizza = Pizza(
-                      pizzaSize: selectedSize,
-                      toppings: selectedToppings,
-                      sauce: selectedSauce,
-                      crustType: selectedCrust,
-                      timestamp: now,
-                    );
-
-                    // get number of pizzas in the cart
-                    numberOfPizzas = snapshot.docs.length;
-
-                    // if the order is full
-                    if (numberOfPizzas >= 5) {
+                    if (await cartIsFull(db)) {
                       if (context.mounted) {
                         showSnackBar(context,
                             'You have reached the limit of pizzas. Please remove one before creating another one.');
                       } else {
                         logger.d('Context not mounted');
-                        return;
                       }
                       return;
                     }
+                  }
+
+                  // 2. check if there's an identical pizza in the database
+                  if (await thereIsAnIdenticalPizza(pizzaMap, db)) {
+                    if (context.mounted) {
+                      if (validPizzaUpdate) {
+                        showIdenticalPizzaDialog(
+                            context); // TODO: this is showing even when valid changes have been made
+                      } else {
+                        showSnackBar(context,
+                            'An identical pizza is already in your cart. Please make this one unique before proceeding.');
+                      }
+                    } else {
+                      logger.d('Context not mounted');
+                    }
+                    return;
+                  }
+
+                  // 3. submit the pizza to the database
+                  bool validPizzaId = pizzaId != null && pizzaId!.isNotEmpty;
+
+                  // create the pizza map to be sent to the database
+                  pizzaMap['timestamp'] = DateTime.now().millisecondsSinceEpoch;
+
+                  if (!validPizzaUpdate) {
+                    try {
+                      // add a new pizza to the database
+                      await db.collection('cart').doc(uuid.v1()).set(pizzaMap);
+
+                      // reset the state
+                      await db.collection('state').doc('1').update({
+                        'pizzaValues': {
+                          'crust': 'Thin Crust',
+                          'sauce': 'Red',
+                          'size': 'Small',
+                          'toppings': [],
+                        }
+                      });
+                    } catch (e) {
+                      logger.e(e);
+                    }
                   } else {
                     if (validPizzaId) {
-                      pizza = Pizza.withId(
-                        pizzaSize: tempPizzaSize!,
-                        toppings: tempSelectedToppings!,
-                        sauce: tempPizzaSauce!,
-                        crustType: tempPizzaCrust!,
-                        timestamp: now,
-                        id: pizzaId!,
-                      );
+                      // update the pizza
+                      try {
+                        await db
+                            .collection('cart')
+                            .doc(pizzaId)
+                            .update(pizzaMap);
+                      } catch (e) {
+                        logger.e(e);
+                      }
                     } else {
                       logger.d('Invalid Pizza ID.');
                       return;
                     }
                   }
 
-                  // check if an identical pizza already exists in the database
-                  for (var doc in snapshot.docs) {
-                    final recordPizzaSize = doc.get('size') as String;
-                    final recordSauce = doc.get('sauce') as String;
-                    final recordCrust = doc.get('crust') as String;
-
-                    // list manipulation for comparison
-                    dynamic recordToppings =
-                        doc.get('toppings') as List<dynamic>;
-                    recordToppings = List<String>.from(recordToppings);
-                    recordToppings = (recordToppings..sort()).toList();
-
-                    bool identicalPizzaAlreadyExists;
-
-                    if (validPizzaUpdate) {
-                      identicalPizzaAlreadyExists =
-                          pizza.pizzaSize.label == recordPizzaSize &&
-                              pizza.sauce.label == recordSauce &&
-                              pizza.crustType.label == recordCrust &&
-                              const ListEquality()
-                                  .equals(recordToppings, pizza.toppings);
-                    } else {
-                      identicalPizzaAlreadyExists =
-                          pizza.pizzaSize.label == recordPizzaSize &&
-                              pizza.sauce.label == recordSauce &&
-                              pizza.crustType.label == recordCrust &&
-                              const ListEquality()
-                                  .equals(recordToppings, pizza.toppings);
-                    }
-
-                    if (identicalPizzaAlreadyExists) {
-                      // tell user that there's already an identical pizza in the cart
-                      if (context.mounted) {
-                        // a snackbar won't show over the modal bottom sheet, so we'll
-                        // show a dialog if the modal bottom sheet is up
-                        if (validPizzaUpdate) {
-                          showIdenticalPizzaDialog(context);
-                        } else {
-                          showSnackBar(context,
-                              'An identical pizza is already in your cart. Please make this one unique before proceeding.');
-                        }
-                      } else {
-                        logger.d('Context not mounted');
-                        return;
-                      }
-
-                      return;
-                    }
-                  }
-
-                  if (validPizzaUpdate && !validPizzaId) {
-                    if (context.mounted) {
-                      showSnackBar(context, 'Pizza ID is invalid.');
-                      logger.d('Pizza ID is invalid');
-                      return;
-                    } else {
-                      logger.d('Context not mounted.');
-                      return;
-                    }
-                  }
-
-                  try {
-                    await db
-                        .collection('cart')
-                        .doc(pizza.id)
-                        .set(pizza.toMap());
-
-                    await db.collection('state').doc('1').update({
-                      'pizzaValues': {
-                        'crust': 'Thin Crust',
-                        'sauce': 'Red',
-                        'size': 'Small',
-                        'toppings': [],
-                      }
-                    });
-                  } catch (e) {
-                    logger.e(e);
-                  }
-
                   // TODO: This is not navigating and showing the snackbar correctly
                   if (context.mounted) {
                     if (validPizzaUpdate) {
-                      Navigator.of(context).pop(true);
+                      // true means the pizza was updated
+                      Navigator.pop(
+                          context, true); // TODO: I'm not done with this
                     } else {
-                      Navigator.of(context).pop(false);
+                      // false means the pizza was added
+                      Navigator.pushReplacementNamed(context, '/home');
                     }
 
                     showSnackBar(
@@ -434,9 +386,9 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
         context: context,
         builder: (context) {
           return AlertDialog(
-            title: const Text('No Changes Made'),
+            title: const Text('Identical Pizza Found'),
             content: const Text(
-                "Make changes, or if you like your pizza how it is, press 'Cancel'."),
+                "Either no changes have been made, or an identical pizza already exists in your cart. Please make this pizza unique before proceeding."),
             actions: [
               ElevatedButton(
                   onPressed: () {
@@ -482,4 +434,30 @@ class _OrderFormWidgetState extends State<OrderFormWidget> {
       },
     );
   }
+}
+
+// PURE FUNCTIONS
+Future<bool> cartIsFull(FirebaseFirestore db) async {
+  CollectionReference cart = db.collection('cart');
+  QuerySnapshot snapshot = await cart.get();
+
+  return snapshot.docs.length >= 5;
+}
+
+Future<bool> thereIsAnIdenticalPizza(
+    Map<String, dynamic> pizzaMap, FirebaseFirestore db) async {
+  // Query Firestore to find a matching document
+  final querySnapshot = await db
+      .collection('cart')
+      .where("size", isEqualTo: pizzaMap["size"])
+      .where("sauce", isEqualTo: pizzaMap["sauce"])
+      .where("crust", isEqualTo: pizzaMap["crust"])
+      .where("toppings", isEqualTo: pizzaMap["toppings"])
+      .get();
+
+  if (querySnapshot.docs.isNotEmpty) {
+    return true;
+  }
+
+  return false;
 }
