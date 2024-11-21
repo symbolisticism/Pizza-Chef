@@ -2,12 +2,17 @@
 This is a pizza ordering application. You can create pizzas, view them in your cart, update them in your cart, and delete them if you want to start from scratch.
 
 <div style="display: flex; justify-content: space-between; flex-wrap: wrap;">
-  <img src="assets/documentation/flutter_04.png" alt="Home Screen" width="300"/>
-  <img src="assets/documentation/flutter_03.png" alt="Order Screen" width="300"/>
-  <img src="assets/documentation/flutter_09.png" alt="Pizza Added" width="300"/>
-  <img src="assets/documentation/flutter_10.png" alt="Cart" width="300"/>
-  <img src="assets/documentation/flutter_11.png" alt="Update Pizza" width="300"/>
-  <img src="assets/documentation/flutter_12.png" alt="Delete Pizza Dialog" width="300"/>
+  <img src="assets\documentation\home.png" alt="Home Screen" width="300"/>
+  <img src="assets\documentation\nav_drawer.png" alt="Navigation Drawer" width="300"/>
+  <img src="assets\documentation\blank_order.png" alt="Blank Order Screen" width="300"/>
+  <img src="assets\documentation\empty_cart.png" alt="Empty Cart" width="300"/>
+  <img src="assets\documentation\filled_order.png" alt="Filled Order Screen" width="300"/>
+  <img src="assets\documentation\pizza_added.png" alt="Pizza Added" width="300"/>
+  <img src="assets\documentation\filled_cart.png" alt="Filled Cart" width="300"/>
+  <img src="assets\documentation\update_pizza.png" alt="Update Pizza" width="300"/>
+  <img src="assets\documentation\updated_pizza.png" alt="Updated Pizza" width="300"/>
+  <img src="assets\documentation\delete_dialog.png" alt="Delete Pizza Dialog" width="300"/>
+  <img src="assets\documentation\pizza_deleted.png" alt="Deleted Pizza" width="300"/>
 </div>
 
 
