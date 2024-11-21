@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:pizza_chef/screens/cart.dart';
+import 'package:pizza_chef/screens/order_form.dart';
 import 'package:pizza_chef/widgets/shopping_cart_badge.dart';
 
 var logger = Logger(printer: PrettyPrinter());
@@ -50,7 +51,7 @@ class _NavDrawerState extends State<NavDrawer> {
             key: const Key('orderButton'),
             onPressed: () {
               if (widget.currentScreenName != '/order') {
-                Navigator.pop(context);
+                Navigator.pop(context); // pop the drawer off
                 Navigator.pushReplacementNamed(context, '/order');
               } else {
                 Navigator.pop(context);
